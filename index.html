@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a1628">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AgriConvert">
+<meta name="description" content="Agricultural unit converter and calculator for field use">
+<link rel="manifest" href="manifest.json">
+<title>AgriConvert Pro</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg:         #0a1628;
+  --bg2:        #0f1e38;
+  --bg3:        #162440;
+  --surface:    #1a2d4a;
+  --border:     #1e3455;
+  --border2:    #254060;
+  --green:      #22c55e;
+  --green-dim:  #16a34a;
+  --green-glow: rgba(34,197,94,0.15);
+  --green-bg:   rgba(34,197,94,0.08);
+  --amber:      #f59e0b;
+  --amber-bg:   rgba(245,158,11,0.08);
+  --blue:       #3b82f6;
+  --blue-bg:    rgba(59,130,246,0.08);
+  --purple:     #a855f7;
+  --purple-bg:  rgba(168,85,247,0.08);
+  --red:        #ef4444;
+  --text:       #e2e8f0;
+  --text2:      #94a3b8;
+  --text3:      #64748b;
+  --mono:       'DM Mono', monospace;
+  --sans:       'Outfit', sans-serif;
+  --nav-h:      64px;
+  --safe-b:     env(safe-area-inset-bottom, 0px);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* ── APP SHELL ── */
+#app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* ── HEADER ── */
+.app-header {
+  flex: none;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px 0;
+  z-index: 10;
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-mark {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--green), #16a34a);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 16px var(--green-glow);
+}
+
+.brand-name {
+  font-size: 18px; font-weight: 800;
+  letter-spacing: -0.3px;
+  background: linear-gradient(135deg, #fff 60%, var(--green));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.brand-version {
+  font-size: 10px; font-weight: 600;
+  color: var(--green); background: var(--green-bg);
+  border: 1px solid rgba(34,197,94,0.2);
+  padding: 2px 6px; border-radius: 4px;
+  font-family: var(--mono);
+}
+
+.offline-pill {
+  font-size: 11px; font-weight: 600;
+  color: var(--amber); background: var(--amber-bg);
+  border: 1px solid rgba(245,158,11,0.2);
+  padding: 4px 10px; border-radius: 20px;
+  display: none;
+}
+.offline-pill.show { display: block; }
+
+/* ── MAIN TABS ── */
+.main-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.main-tab {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 8px;
+  font-size: 13px; font-weight: 600; font-family: var(--sans);
+  background: none; border: none; color: var(--text3);
+  cursor: pointer; border-radius: 8px 8px 0 0;
+  position: relative; transition: color 0.2s;
+}
+
+.main-tab svg { flex-shrink: 0; }
+
+.main-tab.active { color: var(--text); }
+
+.main-tab::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+  height: 2px; border-radius: 2px 2px 0 0;
+  background: transparent; transition: background 0.2s;
+}
+.main-tab[data-tab="convert"].active::after { background: var(--green); }
+.main-tab[data-tab="calculate"].active::after { background: var(--blue); }
+.main-tab[data-tab="settings"].active::after { background: var(--purple); }
+
+/* ── CONTENT AREA ── */
+.content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.screen {
+  position: absolute; inset: 0;
+  display: none; flex-direction: column;
+  overflow: hidden;
+}
+.screen.active { display: flex; }
+
+/* ── SUB-TABS (Converters) ── */
+.sub-tabs {
+  flex: none;
+  display: flex;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.sub-tabs::-webkit-scrollbar { display: none; }
+
+.sub-tab {
+  flex: 1; min-width: 72px;
+  padding: 10px 8px;
+  font-size: 12px; font-weight: 600; font-family: var(--sans);
+  background: none; border: none; color: var(--text3);
+  cursor: pointer; text-align: center;
+  position: relative; transition: color 0.2s; white-space: nowrap;
+}
+.sub-tab.active { color: var(--green); }
+.sub-tab.active::after {
+  content: ''; position: absolute; bottom: 0; left: 4px; right: 4px;
+  height: 2px; background: var(--green); border-radius: 2px;
+}
+
+/* ── CONVERTER INPUT ── */
+.converter-input {
+  flex: none;
+  padding: 12px 16px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex; gap: 10px; align-items: stretch;
+}
+
+.num-input-wrap {
+  flex: 1; position: relative;
+}
+
+.num-input {
+  width: 100%; height: 56px;
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 10px;
+  font-size: 26px; font-weight: 700; font-family: var(--mono);
+  color: var(--text); padding: 0 48px 0 16px;
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  -moz-appearance: textfield;
+}
+.num-input::-webkit-outer-spin-button,
+.num-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.num-input:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px var(--green-glow);
+}
+
+.input-clear {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; color: var(--text3); cursor: pointer;
+  padding: 4px; border-radius: 4px; display: none;
+  transition: color 0.2s;
+}
+.input-clear:hover { color: var(--text); }
+.input-clear.show { display: flex; }
+
+.unit-sel {
+  width: 140px;
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 10px;
+  font-size: 13px; font-weight: 600; font-family: var(--sans);
+  color: var(--text); padding: 0 12px;
+  outline: none; cursor: pointer;
+  transition: border-color 0.2s;
+}
+.unit-sel:focus { border-color: var(--green); }
+
+/* ── RESULTS LIST ── */
+.results-list {
+  flex: 1; overflow-y: auto;
+  padding: 12px 16px 24px;
+  -webkit-overflow-scrolling: touch;
+}
+.results-list::-webkit-scrollbar { width: 4px; }
+.results-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.result-item {
+  display: flex; align-items: center;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 16px;
+  margin-bottom: 8px; cursor: pointer;
+  transition: all 0.15s; position: relative; overflow: hidden;
+  gap: 12px;
+}
+.result-item::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px;
+}
+.result-item.metric::before { background: var(--green); }
+.result-item.imperial::before { background: var(--amber); }
+.result-item.asia::before { background: var(--blue); }
+.result-item.local::before { background: var(--purple); }
+.result-item.farm::before { background: var(--red); }
+
+.result-item:active { transform: scale(0.98); }
+.result-item:hover { border-color: var(--border2); background: var(--bg3); }
+.result-item.copied { border-color: var(--green); background: var(--green-bg); }
+
+.result-main { flex: 1; min-width: 0; }
+
+.result-value {
+  font-size: 22px; font-weight: 700; font-family: var(--mono);
+  color: var(--text); letter-spacing: -0.5px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.result-label {
+  font-size: 12px; color: var(--text2); margin-top: 2px; font-weight: 500;
+}
+
+.result-badge {
+  flex: none;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.5px;
+  padding: 3px 7px; border-radius: 4px; text-transform: uppercase;
+  font-family: var(--mono);
+}
+.badge-metric  { background: var(--green-bg);  color: var(--green);  border: 1px solid rgba(34,197,94,0.2); }
+.badge-imperial{ background: var(--amber-bg);  color: var(--amber);  border: 1px solid rgba(245,158,11,0.2); }
+.badge-asia    { background: var(--blue-bg);   color: var(--blue);   border: 1px solid rgba(59,130,246,0.2); }
+.badge-local   { background: var(--purple-bg); color: var(--purple); border: 1px solid rgba(168,85,247,0.2); }
+.badge-farm    { background: rgba(239,68,68,0.08); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
+
+.copy-icon { flex: none; color: var(--text3); transition: color 0.2s; }
+.result-item:hover .copy-icon { color: var(--green); }
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; height: 200px; color: var(--text3);
+  gap: 8px; text-align: center;
+}
+.empty-state svg { opacity: 0.3; }
+.empty-state p { font-size: 14px; }
+
+/* ── CALCULATOR SCREEN ── */
+.calc-tabs {
+  flex: none;
+  display: flex;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+}
+
+.calc-tab {
+  flex: 1; padding: 10px 8px;
+  font-size: 12px; font-weight: 600; font-family: var(--sans);
+  background: none; border: none; color: var(--text3);
+  cursor: pointer; text-align: center;
+  position: relative; transition: color 0.2s;
+}
+.calc-tab.active { color: var(--blue); }
+.calc-tab.active::after {
+  content: ''; position: absolute; bottom: 0; left: 4px; right: 4px;
+  height: 2px; background: var(--blue); border-radius: 2px;
+}
+
+.calc-body {
+  flex: 1; overflow-y: auto; padding: 16px;
+  -webkit-overflow-scrolling: touch;
+}
+.calc-body::-webkit-scrollbar { width: 4px; }
+.calc-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* Calculator cards */
+.calc-panel { display: none; }
+.calc-panel.active { display: block; }
+
+.calc-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px; margin-bottom: 12px;
+}
+
+.calc-card-title {
+  font-size: 11px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--blue); font-family: var(--mono);
+  margin-bottom: 14px; display: flex; align-items: center; gap: 6px;
+}
+
+.field-group { margin-bottom: 14px; }
+.field-group:last-of-type { margin-bottom: 0; }
+
+.field-label {
+  font-size: 11px; font-weight: 600; color: var(--text2);
+  margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+.field-row { display: flex; gap: 8px; align-items: center; }
+
+.field-input {
+  flex: 1; height: 44px;
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 8px; color: var(--text);
+  font-size: 18px; font-weight: 600; font-family: var(--mono);
+  padding: 0 12px; outline: none; transition: border-color 0.2s;
+  -moz-appearance: textfield;
+}
+.field-input::-webkit-outer-spin-button,
+.field-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.field-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+
+.field-select {
+  height: 44px;
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 8px; color: var(--text);
+  font-size: 13px; font-weight: 600; font-family: var(--sans);
+  padding: 0 10px; outline: none; cursor: pointer;
+  transition: border-color 0.2s;
+}
+.field-select:focus { border-color: var(--blue); }
+
+.field-text {
+  font-size: 13px; font-weight: 600; color: var(--text2); white-space: nowrap;
+}
+
+/* Result output box */
+.result-box {
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 10px; padding: 14px 16px; margin-top: 4px;
+}
+
+.result-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 5px 0; border-bottom: 1px solid var(--border);
+}
+.result-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+.result-row-label { font-size: 12px; color: var(--text2); font-weight: 500; }
+
+.result-row-value {
+  font-size: 18px; font-weight: 700; font-family: var(--mono);
+  color: var(--green); letter-spacing: -0.3px;
+}
+
+.result-row-value.warn { color: var(--amber); }
+
+/* Mode toggle */
+.mode-toggle {
+  display: flex; background: var(--bg3); border-radius: 8px; padding: 3px;
+  margin-bottom: 14px; gap: 3px;
+}
+.mode-btn {
+  flex: 1; padding: 7px; border: none; border-radius: 6px;
+  font-size: 12px; font-weight: 600; font-family: var(--sans);
+  color: var(--text3); background: none; cursor: pointer; transition: all 0.2s;
+}
+.mode-btn.active { background: var(--surface); color: var(--text); }
+
+/* ── SETTINGS SCREEN ── */
+.settings-body {
+  flex: 1; overflow-y: auto; padding: 16px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.settings-section {
+  margin-bottom: 20px;
+}
+
+.settings-section-title {
+  font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--text3);
+  font-family: var(--mono); margin-bottom: 10px; padding: 0 4px;
+}
+
+.settings-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden;
+}
+
+.settings-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+.settings-row:last-child { border-bottom: none; }
+
+.settings-row-info { flex: 1; min-width: 0; }
+.settings-row-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.settings-row-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+.settings-action {
+  flex: none; background: var(--bg3); border: 1px solid var(--border2);
+  color: var(--text2); border-radius: 8px;
+  font-size: 13px; font-weight: 600; font-family: var(--sans);
+  padding: 8px 14px; cursor: pointer; transition: all 0.2s;
+}
+.settings-action:hover { border-color: var(--green); color: var(--green); }
+.settings-action.danger:hover { border-color: var(--red); color: var(--red); }
+
+/* History list */
+.history-list { padding: 8px; }
+
+.history-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px; border-radius: 8px;
+  cursor: pointer; transition: background 0.15s;
+}
+.history-item:hover { background: var(--bg3); }
+
+.history-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex: none; font-size: 14px;
+}
+
+.history-text { flex: 1; min-width: 0; }
+.history-from { font-size: 13px; font-weight: 600; color: var(--text); font-family: var(--mono); }
+.history-to   { font-size: 11px; color: var(--text3); margin-top: 1px; }
+
+.history-time { font-size: 10px; color: var(--text3); font-family: var(--mono); flex: none; }
+
+.empty-history {
+  text-align: center; padding: 32px 16px; color: var(--text3); font-size: 13px;
+}
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: calc(var(--nav-h) + 16px + var(--safe-b));
+  left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--surface); border: 1px solid var(--border2);
+  color: var(--text); padding: 10px 20px; border-radius: 24px;
+  font-size: 13px; font-weight: 600; font-family: var(--sans);
+  opacity: 0; transition: all 0.25s; z-index: 100;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  white-space: nowrap; pointer-events: none;
+}
+.toast.show {
+  opacity: 1; transform: translateX(-50%) translateY(0);
+}
+
+/* ── ONBOARDING ── */
+.onboarding-overlay {
+  position: fixed; inset: 0; background: var(--bg);
+  z-index: 200; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 32px 24px; text-align: center;
+}
+
+.onboarding-logo {
+  width: 72px; height: 72px;
+  background: linear-gradient(135deg, var(--green), #16a34a);
+  border-radius: 20px; display: flex; align-items: center; justify-content: center;
+  margin-bottom: 24px;
+  box-shadow: 0 0 40px var(--green-glow);
+}
+
+.onboarding-title {
+  font-size: 28px; font-weight: 800; letter-spacing: -0.5px;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #fff 60%, var(--green));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.onboarding-sub {
+  font-size: 15px; color: var(--text2); margin-bottom: 40px; line-height: 1.5;
+}
+
+.onboarding-question {
+  font-size: 14px; font-weight: 700; color: var(--text2);
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;
+  font-family: var(--mono);
+}
+
+.unit-choice-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 320px;
+}
+
+.unit-choice {
+  background: var(--bg2); border: 2px solid var(--border2);
+  border-radius: 12px; padding: 16px 12px;
+  cursor: pointer; transition: all 0.2s; text-align: center;
+}
+.unit-choice:hover { border-color: var(--green); }
+.unit-choice.selected { border-color: var(--green); background: var(--green-bg); }
+
+.unit-choice-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.unit-choice-example { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+
+.onboarding-btn {
+  margin-top: 28px; width: 100%; max-width: 320px;
+  padding: 16px; border: none; border-radius: 12px;
+  background: linear-gradient(135deg, var(--green), #16a34a);
+  color: white; font-size: 16px; font-weight: 700; font-family: var(--sans);
+  cursor: pointer; transition: opacity 0.2s;
+  box-shadow: 0 4px 24px var(--green-glow);
+}
+.onboarding-btn:hover { opacity: 0.9; }
+
+/* ── DIVIDER ── */
+.divider {
+  height: 1px; background: var(--border); margin: 4px 0;
+}
+
+/* ── ABOUT SECTION ── */
+.about-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px; text-align: center;
+}
+.about-version {
+  font-size: 24px; font-weight: 800; margin-bottom: 4px;
+  background: linear-gradient(135deg, #fff, var(--green));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.about-sub { font-size: 12px; color: var(--text3); font-family: var(--mono); }
+.about-tags { display: flex; gap: 8px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+.about-tag {
+  font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px;
+  font-family: var(--mono);
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ONBOARDING -->
+  <div class="onboarding-overlay" id="onboarding">
+    <div class="onboarding-logo">
+      <svg width="36" height="36" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+        <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+        <line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>
+      </svg>
+    </div>
+    <div class="onboarding-title">AgriConvert Pro</div>
+    <div class="onboarding-sub">Field-ready agricultural converter & calculator. Works fully offline.</div>
+    <div class="onboarding-question">Choose your default unit system</div>
+    <div class="unit-choice-grid">
+      <div class="unit-choice selected" data-system="my" onclick="selectSystem(this)">
+        <div class="unit-choice-name">🇲🇾 Malaysian</div>
+        <div class="unit-choice-example">Acre · kg · L</div>
+      </div>
+      <div class="unit-choice" data-system="metric" onclick="selectSystem(this)">
+        <div class="unit-choice-name">🌐 Metric</div>
+        <div class="unit-choice-example">Hectare · kg · L</div>
+      </div>
+      <div class="unit-choice" data-system="imperial" onclick="selectSystem(this)">
+        <div class="unit-choice-name">🇬🇧 Imperial</div>
+        <div class="unit-choice-example">Acre · lb · gal</div>
+      </div>
+      <div class="unit-choice" data-system="mixed" onclick="selectSystem(this)">
+        <div class="unit-choice-name">⚖️ Mixed</div>
+        <div class="unit-choice-example">All units shown</div>
+      </div>
+    </div>
+    <button class="onboarding-btn" onclick="finishOnboarding()">Get Started →</button>
+  </div>
+
+  <!-- HEADER -->
+  <header class="app-header">
+    <div class="header-row">
+      <div class="brand">
+        <div class="brand-mark">
+          <svg width="20" height="20" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+            <line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-name">AgriConvert</div>
+        </div>
+        <div class="brand-version">v1.0</div>
+      </div>
+      <div class="offline-pill" id="offlinePill">📴 Offline</div>
+    </div>
+
+    <div class="main-tabs">
+      <button class="main-tab active" data-tab="convert" onclick="switchMain('convert')">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+          <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+          <line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>
+        </svg>
+        Convert
+      </button>
+      <button class="main-tab" data-tab="calculate" onclick="switchMain('calculate')">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+          <rect width="16" height="20" x="4" y="2" rx="2"/>
+          <line x1="8" y1="6" x2="16" y2="6"/>
+          <line x1="8" y1="10" x2="16" y2="10"/>
+          <line x1="8" y1="14" x2="12" y2="14"/>
+        </svg>
+        Calculate
+      </button>
+      <button class="main-tab" data-tab="settings" onclick="switchMain('settings')">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+          <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+        Settings
+      </button>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- ═══ CONVERT SCREEN ═══ -->
+    <div class="screen active" id="screen-convert">
+
+      <div class="sub-tabs">
+        <button class="sub-tab active" data-unit="area" onclick="switchConverter('area')">📐 Area</button>
+        <button class="sub-tab" data-unit="length" onclick="switchConverter('length')">📏 Length</button>
+        <button class="sub-tab" data-unit="weight" onclick="switchConverter('weight')">⚖️ Weight</button>
+        <button class="sub-tab" data-unit="volume" onclick="switchConverter('volume')">💧 Volume</button>
+      </div>
+
+      <div class="converter-input">
+        <div class="num-input-wrap">
+          <input type="number" class="num-input" id="convInput" value="1" step="any"
+            oninput="convert()" onchange="convert()">
+          <button class="input-clear" id="convClear" onclick="clearInput()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+            </svg>
+          </button>
+        </div>
+        <select class="unit-sel" id="convUnit" onchange="convert()">
+          <!-- Populated by JS -->
+        </select>
+      </div>
+
+      <div class="results-list" id="convResults">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- ═══ CALCULATE SCREEN ═══ -->
+    <div class="screen" id="screen-calculate">
+
+      <div class="calc-tabs">
+        <button class="calc-tab active" data-calc="spray" onclick="switchCalc('spray')">💦 Spray Mix</button>
+        <button class="calc-tab" data-calc="fertilizer" onclick="switchCalc('fertilizer')">🌱 Fertilizer</button>
+        <button class="calc-tab" data-calc="dilution" onclick="switchCalc('dilution')">🧪 Dilution</button>
+      </div>
+
+      <div class="calc-body">
+
+        <!-- ── SPRAY MIX ── -->
+        <div class="calc-panel active" id="panel-spray">
+
+          <div class="calc-card">
+            <div class="calc-card-title">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M12 2v6"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/>
+                <path d="M22 22H2"/><path d="m8 22 4-10 4 10"/>
+              </svg>
+              Label Dose Rate
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Product dose per unit</label>
+              <div class="field-row">
+                <input type="number" class="field-input" id="s_dose" value="2" step="any" oninput="calcSpray()">
+                <select class="field-select" id="s_dose_unit" onchange="calcSpray()">
+                  <option value="ml">ml</option>
+                  <option value="L">L</option>
+                  <option value="g">g</option>
+                  <option value="kg">kg</option>
+                </select>
+                <span class="field-text">per</span>
+                <input type="number" class="field-input" id="s_per" value="1" step="any" oninput="calcSpray()" style="max-width:70px">
+                <select class="field-select" id="s_per_unit" onchange="calcSpray()">
+                  <option value="L">L</option>
+                  <option value="gal_us">gal</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="calc-card">
+            <div class="calc-card-title">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              </svg>
+              Your Setup
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Tank size</label>
+              <div class="field-row">
+                <input type="number" class="field-input" id="s_tank" value="16" step="any" oninput="calcSpray()">
+                <select class="field-select" id="s_tank_unit" onchange="calcSpray()">
+                  <option value="L">L</option>
+                  <option value="gal_us">gal (US)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Number of tanks (optional)</label>
+              <div class="field-row">
+                <input type="number" class="field-input" id="s_tanks" placeholder="e.g. 3" step="1" min="1" oninput="calcSpray()">
+                <span class="field-text" style="padding:0 8px">tanks</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="calc-card">
+            <div class="calc-card-title" style="color:var(--green)">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+              Results
+            </div>
+            <div class="result-box" id="spray-result">
+              <div class="result-row">
+                <span class="result-row-label">Product per tank</span>
+                <span class="result-row-value" id="r_per_tank">— ml</span>
+              </div>
+              <div class="result-row">
+                <span class="result-row-label">Water per tank</span>
+                <span class="result-row-value" id="r_water_tank">— L</span>
+              </div>
+              <div class="result-row" id="r_total_row" style="display:none">
+                <span class="result-row-label">Total product (all tanks)</span>
+                <span class="result-row-value" id="r_total">— ml</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── FERTILIZER ── -->
+        <div class="calc-panel" id="panel-fertilizer">
+
+          <div class="calc-card">
+            <div class="calc-card-title">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12c0-2.76 1.12-5.26 2.93-7.07"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+              Application Rate
+            </div>
+
+            <div class="mode-toggle" id="fert-mode-toggle">
+              <button class="mode-btn active" onclick="setFertMode('area')">By Area</button>
+              <button class="mode-btn" onclick="setFertMode('tree')">Per Tree</button>
+            </div>
+
+            <div id="fert-area-inputs">
+              <div class="field-group">
+                <label class="field-label">Recommended rate</label>
+                <div class="field-row">
+                  <input type="number" class="field-input" id="f_rate" value="200" step="any" oninput="calcFert()">
+                  <select class="field-select" id="f_rate_unit" onchange="calcFert()">
+                    <option value="kg_ha">kg/ha</option>
+                    <option value="kg_acre" selected>kg/acre</option>
+                    <option value="lb_acre">lb/acre</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Plot / orchard size</label>
+                <div class="field-row">
+                  <input type="number" class="field-input" id="f_area" value="3.5" step="any" oninput="calcFert()">
+                  <select class="field-select" id="f_area_unit" onchange="calcFert()">
+                    <option value="acre" selected>acres</option>
+                    <option value="ha">hectares</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div id="fert-tree-inputs" style="display:none">
+              <div class="field-group">
+                <label class="field-label">Rate per tree</label>
+                <div class="field-row">
+                  <input type="number" class="field-input" id="f_tree_rate" value="0.5" step="any" oninput="calcFert()">
+                  <select class="field-select" id="f_tree_rate_unit" onchange="calcFert()">
+                    <option value="kg">kg</option>
+                    <option value="g">g</option>
+                  </select>
+                  <span class="field-text">/ tree</span>
+                </div>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Number of trees</label>
+                <div class="field-row">
+                  <input type="number" class="field-input" id="f_trees" value="200" step="1" oninput="calcFert()">
+                  <span class="field-text" style="padding:0 8px">trees</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="calc-card">
+            <div class="calc-card-title">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <rect width="20" height="14" x="2" y="7" rx="2"/>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+              </svg>
+              Product Details
+            </div>
+            <div class="field-group">
+              <label class="field-label">Bag weight</label>
+              <div class="field-row">
+                <select class="field-select" id="f_bag_wt" onchange="calcFert()" style="flex:1">
+                  <option value="50">50 kg bag</option>
+                  <option value="25">25 kg bag</option>
+                  <option value="40">40 kg bag</option>
+                  <option value="custom">Custom</option>
+                </select>
+                <input type="number" class="field-input" id="f_bag_custom" value="50" step="any" oninput="calcFert()" style="display:none;max-width:90px">
+                <span class="field-text" id="f_bag_custom_label" style="display:none;padding:0 6px">kg</span>
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Price per bag (optional)</label>
+              <div class="field-row">
+                <span class="field-text" style="padding:0 10px 0 0">RM</span>
+                <input type="number" class="field-input" id="f_price" placeholder="e.g. 85" step="any" oninput="calcFert()">
+              </div>
+            </div>
+          </div>
+
+          <div class="calc-card">
+            <div class="calc-card-title" style="color:var(--green)">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+              Results
+            </div>
+            <div class="result-box">
+              <div class="result-row">
+                <span class="result-row-label">Total fertilizer needed</span>
+                <span class="result-row-value" id="f_total_kg">— kg</span>
+              </div>
+              <div class="result-row">
+                <span class="result-row-label">Bags required (exact)</span>
+                <span class="result-row-value" id="f_bags_exact">—</span>
+              </div>
+              <div class="result-row">
+                <span class="result-row-label">Bags to purchase (rounded up)</span>
+                <span class="result-row-value" id="f_bags_buy" class="warn">—</span>
+              </div>
+              <div class="result-row" id="f_cost_row" style="display:none">
+                <span class="result-row-label">Estimated cost</span>
+                <span class="result-row-value" id="f_cost">— RM</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── DILUTION ── -->
+        <div class="calc-panel" id="panel-dilution">
+
+          <div class="calc-card">
+            <div class="calc-card-title">Mode</div>
+            <div class="mode-toggle">
+              <button class="mode-btn active" onclick="setDilMode('target')">Target %</button>
+              <button class="mode-btn" onclick="setDilMode('label')">Label Rate</button>
+            </div>
+
+            <!-- Mode A: Target % -->
+            <div id="dil-target-inputs">
+              <div class="field-group">
+                <label class="field-label">Target solution concentration</label>
+                <div class="field-row">
+                  <input type="number" class="field-input" id="d_target_pct" value="0.1" step="any" oninput="calcDilution()">
+                  <span class="field-text" style="padding:0 10px">%</span>
+                </div>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Final volume needed</label>
+                <div class="field-row">
+                  <input type="number" class="field-input" id="d_final_vol" value="15" step="any" oninput="calcDilution()">
+                  <select class="field-select" id="d_final_vol_unit" onchange="calcDilution()">
+                    <option value="L">L</option>
+                    <option value="ml">ml</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Product concentration</label>
+                <div class="field-row">
+                  <input type="number" class="field-input" id="d_stock_pct" value="50" step="any" oninput="calcDilution()">
+                  <span class="field-text" style="padding:0 10px">%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mode B: Label Rate -->
+            <div id="dil-label-inputs" style="display:none">
+              <div class="field-group">
+                <label class="field-label">Add product amount</label>
+                <div class="field-row">
+                  <input type="number" class="field-input" id="d_add_amt" value="30" step="any" oninput="calcDilution()">
+                  <select class="field-select" id="d_add_unit" onchange="calcDilution()">
+                    <option value="ml">ml</option>
+                    <option value="L">L</option>
+                    <option value="g">g</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field-group">
+                <label class="field-label">To water volume</label>
+                <div class="field-row">
+                  <input type="number" class="field-input" id="d_water_amt" value="15" step="any" oninput="calcDilution()">
+                  <select class="field-select" id="d_water_unit" onchange="calcDilution()">
+                    <option value="L">L</option>
+                    <option value="ml">ml</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="calc-card">
+            <div class="calc-card-title" style="color:var(--green)">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+              Results
+            </div>
+            <div class="result-box">
+              <div class="result-row" id="d_row_add">
+                <span class="result-row-label" id="d_label_add">Product to add</span>
+                <span class="result-row-value" id="d_val_add">— ml</span>
+              </div>
+              <div class="result-row" id="d_row_water">
+                <span class="result-row-label" id="d_label_water">Water to add</span>
+                <span class="result-row-value" id="d_val_water">— L</span>
+              </div>
+              <div class="result-row">
+                <span class="result-row-label" id="d_label_final">Final concentration</span>
+                <span class="result-row-value" id="d_val_pct">— %</span>
+              </div>
+              <div class="result-row">
+                <span class="result-row-label">Active ingredient per litre</span>
+                <span class="result-row-value" id="d_val_per_l">— ml/L</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /calc-body -->
+    </div><!-- /screen-calculate -->
+
+    <!-- ═══ SETTINGS SCREEN ═══ -->
+    <div class="screen" id="screen-settings">
+      <div class="settings-body">
+
+        <div class="settings-section">
+          <div class="settings-section-title">History</div>
+          <div class="settings-card" id="history-container">
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <div class="settings-row-title">Conversion History</div>
+                <div class="settings-row-sub">Last 20 conversions</div>
+              </div>
+              <button class="settings-action danger" onclick="clearHistory()">Clear</button>
+            </div>
+            <div class="history-list" id="history-list">
+              <div class="empty-history">No conversions yet.<br>Use the Convert tab to get started.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">Unit System</div>
+          <div class="settings-card">
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <div class="settings-row-title">Default System</div>
+                <div class="settings-row-sub" id="current-system-label">Malaysian (Acre · kg · L)</div>
+              </div>
+              <button class="settings-action" onclick="resetOnboarding()">Change</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">About</div>
+          <div class="about-card">
+            <div class="about-version">AgriConvert Pro</div>
+            <div class="about-sub">v1.0.0 · Built for Malaysian durian farming</div>
+            <div class="about-tags">
+              <span class="about-tag badge-metric">Offline Ready</span>
+              <span class="about-tag badge-imperial">PWA</span>
+              <span class="about-tag badge-local">Farm OS</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /app -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+// UNIT DATA
+// ═══════════════════════════════════════════════
+const UNITS = {
+  area: {
+    m2:       { name: 'Square Meter',    symbol: 'm²',      factor: 1,              type: 'metric'   },
+    hectare:  { name: 'Hectare',         symbol: 'ha',       factor: 10000,          type: 'metric'   },
+    sqft:     { name: 'Square Foot',     symbol: 'ft²',      factor: 0.09290304,     type: 'imperial' },
+    acre:     { name: 'Acre',            symbol: 'ac',       factor: 4046.8564224,   type: 'imperial' },
+    rood:     { name: 'Rood',            symbol: 'ro',       factor: 1011.7141056,   type: 'imperial' },
+    pole:     { name: 'Square Pole',     symbol: 'sq pole',  factor: 25.29285264,    type: 'imperial' },
+    ping:     { name: 'Ping / Tsubo',    symbol: '坪',        factor: 3.30579,        type: 'asia'     },
+    mu:       { name: 'Chinese Mu',      symbol: '市亩',      factor: 666.6667,       type: 'asia'     },
+    relong:   { name: 'Relong (Penang)', symbol: 'relong',   factor: 5327.605,       type: 'local'    },
+  },
+  length: {
+    mm:       { name: 'Millimeter',      symbol: 'mm',       factor: 0.001,          type: 'metric'   },
+    cm:       { name: 'Centimeter',      symbol: 'cm',       factor: 0.01,           type: 'metric'   },
+    m:        { name: 'Meter',           symbol: 'm',        factor: 1,              type: 'metric'   },
+    km:       { name: 'Kilometer',       symbol: 'km',       factor: 1000,           type: 'metric'   },
+    inch:     { name: 'Inch',            symbol: 'in',       factor: 0.0254,         type: 'imperial' },
+    foot:     { name: 'Foot',            symbol: 'ft',       factor: 0.3048,         type: 'imperial' },
+    yard:     { name: 'Yard',            symbol: 'yd',       factor: 0.9144,         type: 'imperial' },
+    chain:    { name: 'Chain (Rantai)',  symbol: 'ch',       factor: 20.1168,        type: 'imperial' },
+    rod:      { name: 'Rod / Pole',      symbol: 'rod',      factor: 5.0292,         type: 'imperial' },
+    link:     { name: 'Link',            symbol: 'lk',       factor: 0.201168,       type: 'imperial' },
+  },
+  weight: {
+    g:        { name: 'Gram',            symbol: 'g',        factor: 0.001,          type: 'metric'   },
+    kg:       { name: 'Kilogram',        symbol: 'kg',       factor: 1,              type: 'metric'   },
+    tonne:    { name: 'Metric Tonne',    symbol: 'MT',       factor: 1000,           type: 'metric'   },
+    oz:       { name: 'Ounce',           symbol: 'oz',       factor: 0.02834952,     type: 'imperial' },
+    lb:       { name: 'Pound',           symbol: 'lb',       factor: 0.45359237,     type: 'imperial' },
+    bag25:    { name: 'Bag (25 kg)',      symbol: 'bag25',    factor: 25,             type: 'farm'     },
+    bag50:    { name: 'Bag (50 kg)',      symbol: 'bag50',    factor: 50,             type: 'farm'     },
+    pikul:    { name: 'Pikul (MY)',       symbol: 'pikul',    factor: 60,             type: 'local'    },
+  },
+  volume: {
+    ml:       { name: 'Milliliter',      symbol: 'ml',       factor: 0.001,          type: 'metric'   },
+    cc:       { name: 'cc / cm³',        symbol: 'cc',       factor: 0.001,          type: 'metric'   },
+    L:        { name: 'Litre',           symbol: 'L',        factor: 1,              type: 'metric'   },
+    m3:       { name: 'Cubic Meter',     symbol: 'm³',       factor: 1000,           type: 'metric'   },
+    floz:     { name: 'Fluid Ounce (US)',symbol: 'fl oz',    factor: 0.0295735,      type: 'imperial' },
+    pint_us:  { name: 'Pint (US)',       symbol: 'pt',       factor: 0.473176,       type: 'imperial' },
+    quart_us: { name: 'Quart (US)',      symbol: 'qt',       factor: 0.946353,       type: 'imperial' },
+    gal_us:   { name: 'Gallon (US)',     symbol: 'gal US',   factor: 3.78541,        type: 'imperial' },
+    gal_uk:   { name: 'Gallon (UK)',     symbol: 'gal UK',   factor: 4.54609,        type: 'imperial' },
+  }
+};
+
+// Default units per system
+const DEFAULT_UNITS = {
+  my:       { area: 'acre',    length: 'm',     weight: 'kg',  volume: 'L'  },
+  metric:   { area: 'hectare', length: 'm',     weight: 'kg',  volume: 'L'  },
+  imperial: { area: 'acre',    length: 'foot',  weight: 'lb',  volume: 'gal_us' },
+  mixed:    { area: 'acre',    length: 'm',     weight: 'kg',  volume: 'L'  },
+};
+
+const SYSTEM_LABELS = {
+  my: 'Malaysian (Acre · kg · L)',
+  metric: 'Metric (Hectare · kg · L)',
+  imperial: 'Imperial (Acre · lb · gal)',
+  mixed: 'Mixed (All units shown)',
+};
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let state = {
+  system: 'my',
+  converter: 'area',
+  calc: 'spray',
+  history: [],
+  fertMode: 'area',
+  dilMode: 'target',
+};
+
+// ═══════════════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════════════
+function save() {
+  try {
+    localStorage.setItem('agri_state', JSON.stringify({
+      system: state.system,
+      history: state.history,
+    }));
+  } catch(e) {}
+}
+
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem('agri_state') || '{}');
+    if (d.system) state.system = d.system;
+    if (d.history) state.history = d.history;
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════
+// ONBOARDING
+// ═══════════════════════════════════════════════
+let selectedSystem = 'my';
+
+function selectSystem(el) {
+  document.querySelectorAll('.unit-choice').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedSystem = el.dataset.system;
+}
+
+function finishOnboarding() {
+  state.system = selectedSystem;
+  save();
+  document.getElementById('onboarding').style.display = 'none';
+  init();
+}
+
+function resetOnboarding() {
+  document.getElementById('onboarding').style.display = 'flex';
+  selectedSystem = state.system;
+  document.querySelectorAll('.unit-choice').forEach(e => {
+    e.classList.toggle('selected', e.dataset.system === selectedSystem);
+  });
+}
+
+// ═══════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════
+function switchMain(tab) {
+  document.querySelectorAll('.main-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === 'screen-' + tab));
+  if (tab === 'settings') renderHistory();
+}
+
+function switchConverter(type) {
+  state.converter = type;
+  document.querySelectorAll('.sub-tab').forEach(t => t.classList.toggle('active', t.dataset.unit === type));
+  buildUnitSelect();
+  convert();
+}
+
+function switchCalc(calc) {
+  state.calc = calc;
+  document.querySelectorAll('.calc-tab').forEach(t => t.classList.toggle('active', t.dataset.calc === calc));
+  document.querySelectorAll('.calc-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + calc));
+}
+
+// ═══════════════════════════════════════════════
+// CONVERTER
+// ═══════════════════════════════════════════════
+function buildUnitSelect() {
+  const sel = document.getElementById('convUnit');
+  const units = UNITS[state.converter];
+  const def = DEFAULT_UNITS[state.system][state.converter];
+  sel.innerHTML = '';
+  Object.entries(units).forEach(([key, u]) => {
+    const o = document.createElement('option');
+    o.value = key;
+    o.textContent = `${u.symbol} — ${u.name}`;
+    if (key === def) o.selected = true;
+    sel.appendChild(o);
+  });
+}
+
+function fmt(val) {
+  if (!isFinite(val)) return '—';
+  if (val === 0) return '0';
+  if (Math.abs(val) >= 1e9) return val.toExponential(4);
+  if (Math.abs(val) >= 1000) return val.toLocaleString('en-MY', { maximumFractionDigits: 4 });
+  if (Math.abs(val) >= 1)    return +val.toPrecision(8) + '';
+  return +val.toPrecision(6) + '';
+}
+
+function convert() {
+  const inputEl = document.getElementById('convInput');
+  const val = parseFloat(inputEl.value);
+  const fromKey = document.getElementById('convUnit').value;
+  const container = document.getElementById('convResults');
+  const clearBtn = document.getElementById('convClear');
+
+  clearBtn.classList.toggle('show', inputEl.value !== '');
+
+  if (!inputEl.value || isNaN(val)) {
+    container.innerHTML = '<div class="empty-state"><svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><p>Enter a value above</p></div>';
+    return;
+  }
+
+  const units = UNITS[state.converter];
+  const fromUnit = units[fromKey];
+  const baseVal = val * fromUnit.factor; // convert to base unit
+
+  container.innerHTML = '';
+
+  Object.entries(units).forEach(([key, u]) => {
+    if (key === fromKey) return;
+    const result = baseVal / u.factor;
+    const card = document.createElement('button');
+    card.className = `result-item ${u.type}`;
+    card.innerHTML = `
+      <div class="result-main">
+        <div class="result-value">${fmt(result)} <span style="font-size:16px;color:var(--text2)">${u.symbol}</span></div>
+        <div class="result-label">${u.name}</div>
+      </div>
+      <span class="result-badge badge-${u.type}">${u.type}</span>
+      <svg class="copy-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+      </svg>
+    `;
+    card.onclick = () => copyResult(card, fmt(result), u.symbol, val, fromUnit.symbol, u.name);
+    container.appendChild(card);
+  });
+}
+
+function clearInput() {
+  document.getElementById('convInput').value = '';
+  convert();
+  document.getElementById('convInput').focus();
+}
+
+function copyResult(card, value, symbol, fromVal, fromSym, toName) {
+  const text = `${value} ${symbol}`;
+  navigator.clipboard.writeText(text).catch(() => {});
+  card.classList.add('copied');
+  setTimeout(() => card.classList.remove('copied'), 1200);
+  showToast(`Copied: ${text}`);
+
+  // Add to history
+  addHistory({
+    from: `${fromVal} ${fromSym}`,
+    to: `${value} ${symbol}`,
+    toName,
+    type: state.converter,
+    time: Date.now(),
+  });
+}
+
+// ═══════════════════════════════════════════════
+// HISTORY
+// ═══════════════════════════════════════════════
+const TYPE_ICONS = { area: '📐', length: '📏', weight: '⚖️', volume: '💧' };
+const TYPE_COLORS = { area: 'badge-metric', length: 'badge-imperial', weight: 'badge-asia', volume: 'badge-local' };
+
+function addHistory(entry) {
+  state.history.unshift(entry);
+  if (state.history.length > 20) state.history.pop();
+  save();
+}
+
+function renderHistory() {
+  const el = document.getElementById('history-list');
+  if (!state.history.length) {
+    el.innerHTML = '<div class="empty-history">No conversions yet.<br>Use the Convert tab to get started.</div>';
+    return;
+  }
+  el.innerHTML = state.history.map(h => {
+    const ago = timeAgo(h.time);
+    return `
+      <div class="history-item">
+        <div class="history-icon ${TYPE_COLORS[h.type]}" style="background:var(--bg3)">
+          ${TYPE_ICONS[h.type] || '🔢'}
+        </div>
+        <div class="history-text">
+          <div class="history-from">${h.from} → ${h.to}</div>
+          <div class="history-to">${h.toName}</div>
+        </div>
+        <div class="history-time">${ago}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function clearHistory() {
+  state.history = [];
+  save();
+  renderHistory();
+  showToast('History cleared');
+}
+
+function timeAgo(ts) {
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 60) return 'just now';
+  if (s < 3600) return Math.floor(s/60) + 'm ago';
+  if (s < 86400) return Math.floor(s/3600) + 'h ago';
+  return Math.floor(s/86400) + 'd ago';
+}
+
+// ═══════════════════════════════════════════════
+// SPRAY CALCULATOR
+// ═══════════════════════════════════════════════
+function calcSpray() {
+  const dose      = parseFloat(document.getElementById('s_dose').value) || 0;
+  const doseUnit  = document.getElementById('s_dose_unit').value;
+  const per       = parseFloat(document.getElementById('s_per').value) || 1;
+  const perUnit   = document.getElementById('s_per_unit').value;
+  const tank      = parseFloat(document.getElementById('s_tank').value) || 0;
+  const tankUnit  = document.getElementById('s_tank_unit').value;
+  const tanks     = parseInt(document.getElementById('s_tanks').value) || 0;
+
+  // Normalise to ml and L
+  const toML  = { ml: 1, L: 1000, g: 1, kg: 1000 };
+  const toL   = { L: 1, gal_us: 3.78541 };
+
+  const doseML   = dose * toML[doseUnit];
+  const perL     = per  * toL[perUnit];
+  const tankL    = tank * toL[tankUnit];
+
+  if (!doseML || !perL || !tankL) {
+    document.getElementById('r_per_tank').textContent = '—';
+    document.getElementById('r_water_tank').textContent = '—';
+    return;
+  }
+
+  const perTankML   = (doseML / perL) * tankL;
+  const waterL      = tankL - (perTankML / 1000);
+
+  document.getElementById('r_per_tank').textContent   = fmtCalc(perTankML) + ' ' + doseUnit;
+  document.getElementById('r_water_tank').textContent = fmtCalc(waterL) + ' L';
+
+  const totalRow = document.getElementById('r_total_row');
+  if (tanks > 0) {
+    totalRow.style.display = 'flex';
+    document.getElementById('r_total').textContent = fmtCalc(perTankML * tanks) + ' ' + doseUnit;
+  } else {
+    totalRow.style.display = 'none';
+  }
+}
+
+// ═══════════════════════════════════════════════
+// FERTILIZER CALCULATOR
+// ═══════════════════════════════════════════════
+function setFertMode(mode) {
+  state.fertMode = mode;
+  document.querySelectorAll('#fert-mode-toggle .mode-btn').forEach((b, i) => {
+    b.classList.toggle('active', (i === 0 && mode === 'area') || (i === 1 && mode === 'tree'));
+  });
+  document.getElementById('fert-area-inputs').style.display = mode === 'area' ? 'block' : 'none';
+  document.getElementById('fert-tree-inputs').style.display = mode === 'tree' ? 'block' : 'none';
+  calcFert();
+}
+
+document.getElementById('f_bag_wt').addEventListener('change', function() {
+  const isCustom = this.value === 'custom';
+  document.getElementById('f_bag_custom').style.display = isCustom ? 'block' : 'none';
+  document.getElementById('f_bag_custom_label').style.display = isCustom ? 'inline' : 'none';
+  calcFert();
+});
+
+function calcFert() {
+  let totalKg = 0;
+
+  if (state.fertMode === 'area') {
+    const rate     = parseFloat(document.getElementById('f_rate').value) || 0;
+    const rateUnit = document.getElementById('f_rate_unit').value;
+    const area     = parseFloat(document.getElementById('f_area').value) || 0;
+    const areaUnit = document.getElementById('f_area_unit').value;
+
+    // Convert rate to kg/ha
+    const toKgHa = { kg_ha: 1, kg_acre: 2.47105, lb_acre: 1.12085 };
+    const rateKgHa = rate * toKgHa[rateUnit];
+
+    // Convert area to ha
+    const toHa = { acre: 0.404686, ha: 1 };
+    const areaHa = area * toHa[areaUnit];
+
+    totalKg = rateKgHa * areaHa;
+  } else {
+    const treeRate     = parseFloat(document.getElementById('f_tree_rate').value) || 0;
+    const treeRateUnit = document.getElementById('f_tree_rate_unit').value;
+    const trees        = parseFloat(document.getElementById('f_trees').value) || 0;
+    const toKg = { kg: 1, g: 0.001 };
+    totalKg = treeRate * toKg[treeRateUnit] * trees;
+  }
+
+  const bagWtSel = document.getElementById('f_bag_wt').value;
+  const bagWt = bagWtSel === 'custom'
+    ? parseFloat(document.getElementById('f_bag_custom').value) || 50
+    : parseFloat(bagWtSel);
+
+  const bagsExact = bagWt > 0 ? totalKg / bagWt : 0;
+  const bagsBuy   = Math.ceil(bagsExact);
+
+  document.getElementById('f_total_kg').textContent  = totalKg ? fmtCalc(totalKg) + ' kg' : '—';
+  document.getElementById('f_bags_exact').textContent = bagsExact ? fmtCalc(bagsExact) + ' bags' : '—';
+  document.getElementById('f_bags_buy').textContent  = bagsBuy   ? bagsBuy + ' bags' : '—';
+
+  const price = parseFloat(document.getElementById('f_price').value);
+  const costRow = document.getElementById('f_cost_row');
+  if (price && bagsBuy) {
+    costRow.style.display = 'flex';
+    document.getElementById('f_cost').textContent = 'RM ' + fmtCalc(price * bagsBuy);
+  } else {
+    costRow.style.display = 'none';
+  }
+}
+
+// ═══════════════════════════════════════════════
+// DILUTION CALCULATOR
+// ═══════════════════════════════════════════════
+function setDilMode(mode) {
+  state.dilMode = mode;
+  document.querySelectorAll('#panel-dilution .mode-btn').forEach((b, i) => {
+    b.classList.toggle('active', (i === 0 && mode === 'target') || (i === 1 && mode === 'label'));
+  });
+  document.getElementById('dil-target-inputs').style.display = mode === 'target' ? 'block' : 'none';
+  document.getElementById('dil-label-inputs').style.display  = mode === 'label'  ? 'block' : 'none';
+  calcDilution();
+}
+
+function calcDilution() {
+  if (state.dilMode === 'target') {
+    const targetPct  = parseFloat(document.getElementById('d_target_pct').value) || 0;
+    const finalVol   = parseFloat(document.getElementById('d_final_vol').value) || 0;
+    const finalUnit  = document.getElementById('d_final_vol_unit').value;
+    const stockPct   = parseFloat(document.getElementById('d_stock_pct').value) || 100;
+
+    const finalL = finalVol * (finalUnit === 'L' ? 1 : 0.001);
+    const productL = (targetPct / stockPct) * finalL;
+    const productML = productL * 1000;
+    const waterL = finalL - productL;
+    const actualPct = finalL > 0 ? (productL / finalL) * 100 : 0;
+
+    document.getElementById('d_label_add').textContent   = 'Product to add';
+    document.getElementById('d_val_add').textContent     = productML ? fmtCalc(productML) + ' ml' : '—';
+    document.getElementById('d_label_water').textContent = 'Water to add';
+    document.getElementById('d_val_water').textContent   = waterL ? fmtCalc(waterL) + ' L' : '—';
+    document.getElementById('d_label_final').textContent = 'Final concentration';
+    document.getElementById('d_val_pct').textContent     = actualPct ? fmtCalc(actualPct) + ' %' : '—';
+    document.getElementById('d_val_per_l').textContent   = productML && finalL ? fmtCalc(productML / finalL) + ' ml/L' : '—';
+
+  } else {
+    const addAmt   = parseFloat(document.getElementById('d_add_amt').value) || 0;
+    const addUnit  = document.getElementById('d_add_unit').value;
+    const waterAmt = parseFloat(document.getElementById('d_water_amt').value) || 0;
+    const waterUnit= document.getElementById('d_water_unit').value;
+
+    const toL = { ml: 0.001, L: 1, g: 0.001 };
+    const addL  = addAmt   * toL[addUnit];
+    const waterL = waterAmt * toL[waterUnit];
+    const totalL = addL + waterL;
+    const pct = totalL > 0 ? (addL / totalL) * 100 : 0;
+    const perL = waterL > 0 ? addAmt / waterAmt : 0; // ratio per unit water
+
+    document.getElementById('d_label_add').textContent   = 'Product added';
+    document.getElementById('d_val_add').textContent     = addAmt ? fmtCalc(addAmt) + ' ' + addUnit : '—';
+    document.getElementById('d_label_water').textContent = 'Water volume';
+    document.getElementById('d_val_water').textContent   = waterAmt ? fmtCalc(waterAmt) + ' ' + waterUnit : '—';
+    document.getElementById('d_label_final').textContent = 'Solution strength';
+    document.getElementById('d_val_pct').textContent     = pct ? fmtCalc(pct) + ' %' : '—';
+    document.getElementById('d_val_per_l').textContent   = perL ? fmtCalc(addAmt / waterAmt) + ' ' + addUnit + '/' + waterUnit : '—';
+  }
+}
+
+// ═══════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════
+function fmtCalc(val) {
+  if (!isFinite(val) || val === 0) return '0';
+  if (val >= 10000) return val.toLocaleString('en-MY', { maximumFractionDigits: 1 });
+  if (val >= 100)   return +val.toFixed(2) + '';
+  if (val >= 1)     return +val.toFixed(4) + '';
+  return +val.toPrecision(4) + '';
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ═══════════════════════════════════════════════
+// OFFLINE DETECTION
+// ═══════════════════════════════════════════════
+function updateOnlineStatus() {
+  document.getElementById('offlinePill').classList.toggle('show', !navigator.onLine);
+}
+window.addEventListener('online',  updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+
+// ═══════════════════════════════════════════════
+// SERVICE WORKER
+// ═══════════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(r => console.log('SW registered:', r.scope))
+      .catch(e => console.log('SW failed:', e));
+  });
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+function init() {
+  document.getElementById('current-system-label').textContent = SYSTEM_LABELS[state.system];
+  buildUnitSelect();
+  convert();
+  calcSpray();
+  calcFert();
+  calcDilution();
+  updateOnlineStatus();
+}
+
+// Boot
+load();
+
+// Show onboarding only on first visit
+if (!localStorage.getItem('agri_state')) {
+  document.getElementById('onboarding').style.display = 'flex';
+} else {
+  document.getElementById('onboarding').style.display = 'none';
+  init();
+}
+</script>
+</body>
+</html>
