@@ -241,45 +241,59 @@ html, body {
 .results-list::-webkit-scrollbar { width: 4px; }
 .results-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
 
+/* Responsive grid: 1 col on phones, 2 col on tablets, 3 col on PC */
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+@media (min-width: 600px)  { .results-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .results-grid { grid-template-columns: repeat(3, 1fr); } }
+
 .result-item {
   display: flex; align-items: center;
   background: var(--bg2); border: 1px solid var(--border);
   border-radius: 12px; padding: 14px 16px;
-  margin-bottom: 8px; cursor: pointer;
+  cursor: pointer; width: 100%;
   transition: all 0.15s; position: relative; overflow: hidden;
-  gap: 12px;
+  gap: 10px; text-align: left;
 }
 .result-item::before {
   content: ''; position: absolute; left: 0; top: 0; bottom: 0;
-  width: 3px;
+  width: 3px; border-radius: 3px 0 0 3px;
 }
-.result-item.metric::before { background: var(--green); }
+.result-item.metric::before   { background: var(--green); }
 .result-item.imperial::before { background: var(--amber); }
-.result-item.asia::before { background: var(--blue); }
-.result-item.local::before { background: var(--purple); }
-.result-item.farm::before { background: var(--red); }
+.result-item.asia::before     { background: var(--blue); }
+.result-item.local::before    { background: var(--purple); }
+.result-item.farm::before     { background: var(--red); }
 
 .result-item:active { transform: scale(0.98); }
-.result-item:hover { border-color: var(--border2); background: var(--bg3); }
+.result-item:hover  { border-color: var(--border2); background: var(--bg3); }
 .result-item.copied { border-color: var(--green); background: var(--green-bg); }
 
 .result-main { flex: 1; min-width: 0; }
 
 .result-value {
-  font-size: 22px; font-weight: 700; font-family: var(--mono);
+  font-size: 20px; font-weight: 700; font-family: var(--mono);
   color: var(--text); letter-spacing: -0.5px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
 .result-label {
-  font-size: 12px; color: var(--text2); margin-top: 2px; font-weight: 500;
+  font-size: 11px; color: var(--text2); margin-top: 3px; font-weight: 500;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.result-right {
+  flex: none; display: flex; flex-direction: column;
+  align-items: flex-end; gap: 6px;
 }
 
 .result-badge {
-  flex: none;
   font-size: 9px; font-weight: 700; letter-spacing: 0.5px;
   padding: 3px 7px; border-radius: 4px; text-transform: uppercase;
-  font-family: var(--mono);
+  font-family: var(--mono); white-space: nowrap;
 }
 .badge-metric  { background: var(--green-bg);  color: var(--green);  border: 1px solid rgba(34,197,94,0.2); }
 .badge-imperial{ background: var(--amber-bg);  color: var(--amber);  border: 1px solid rgba(245,158,11,0.2); }
@@ -287,7 +301,7 @@ html, body {
 .badge-local   { background: var(--purple-bg); color: var(--purple); border: 1px solid rgba(168,85,247,0.2); }
 .badge-farm    { background: rgba(239,68,68,0.08); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
 
-.copy-icon { flex: none; color: var(--text3); transition: color 0.2s; }
+.copy-icon { color: var(--text3); transition: color 0.2s; flex: none; }
 .result-item:hover .copy-icon { color: var(--green); }
 
 /* ── EMPTY STATE ── */
@@ -350,32 +364,46 @@ html, body {
   margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.5px;
 }
 
-.field-row { display: flex; gap: 8px; align-items: center; }
+.field-row { display: flex; gap: 8px; align-items: center; flex-wrap: nowrap; }
+
+/* Two-segment dose row: [value + unit] per [per-value + per-unit] */
+.dose-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 8px; align-items: center;
+}
+.dose-segment { display: flex; gap: 6px; align-items: center; }
+.dose-sep {
+  font-size: 13px; font-weight: 700; color: var(--text3);
+  text-align: center; padding: 0 2px;
+}
 
 .field-input {
-  flex: 1; height: 44px;
+  flex: 1; height: 44px; min-width: 0;
   background: var(--bg3); border: 1px solid var(--border2);
   border-radius: 8px; color: var(--text);
   font-size: 18px; font-weight: 600; font-family: var(--mono);
   padding: 0 12px; outline: none; transition: border-color 0.2s;
-  -moz-appearance: textfield;
+  -moz-appearance: textfield; width: 100%;
 }
 .field-input::-webkit-outer-spin-button,
 .field-input::-webkit-inner-spin-button { -webkit-appearance: none; }
 .field-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+.field-input.sm { max-width: 90px; flex: none; }
 
 .field-select {
-  height: 44px;
+  height: 44px; flex: none;
   background: var(--bg3); border: 1px solid var(--border2);
   border-radius: 8px; color: var(--text);
   font-size: 13px; font-weight: 600; font-family: var(--sans);
-  padding: 0 10px; outline: none; cursor: pointer;
+  padding: 0 8px; outline: none; cursor: pointer;
   transition: border-color 0.2s;
 }
 .field-select:focus { border-color: var(--blue); }
+.field-select.wide { min-width: 110px; }
 
 .field-text {
-  font-size: 13px; font-weight: 600; color: var(--text2); white-space: nowrap;
+  font-size: 13px; font-weight: 600; color: var(--text2); white-space: nowrap; flex: none;
 }
 
 /* Result output box */
@@ -625,7 +653,7 @@ html, body {
         <div>
           <div class="brand-name">AgriConvert</div>
         </div>
-        <div class="brand-version">v1.0</div>
+        <div class="brand-version">v1.1</div>
       </div>
       <div class="offline-pill" id="offlinePill">📴 Offline</div>
     </div>
@@ -714,21 +742,25 @@ html, body {
             </div>
 
             <div class="field-group">
-              <label class="field-label">Product dose per unit</label>
-              <div class="field-row">
-                <input type="number" class="field-input" id="s_dose" value="2" step="any" oninput="calcSpray()">
-                <select class="field-select" id="s_dose_unit" onchange="calcSpray()">
-                  <option value="ml">ml</option>
-                  <option value="L">L</option>
-                  <option value="g">g</option>
-                  <option value="kg">kg</option>
-                </select>
-                <span class="field-text">per</span>
-                <input type="number" class="field-input" id="s_per" value="1" step="any" oninput="calcSpray()" style="max-width:70px">
-                <select class="field-select" id="s_per_unit" onchange="calcSpray()">
-                  <option value="L">L</option>
-                  <option value="gal_us">gal</option>
-                </select>
+              <label class="field-label">Product dose per unit (from label)</label>
+              <div class="dose-row">
+                <div class="dose-segment">
+                  <input type="number" class="field-input" id="s_dose" value="2" step="any" oninput="calcSpray()">
+                  <select class="field-select" id="s_dose_unit" onchange="calcSpray()">
+                    <option value="ml">ml</option>
+                    <option value="L">L</option>
+                    <option value="g">g</option>
+                    <option value="kg">kg</option>
+                  </select>
+                </div>
+                <div class="dose-sep">per</div>
+                <div class="dose-segment">
+                  <input type="number" class="field-input sm" id="s_per" value="1" step="any" oninput="calcSpray()">
+                  <select class="field-select" id="s_per_unit" onchange="calcSpray()">
+                    <option value="L">L</option>
+                    <option value="gal_us">gal</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
@@ -1041,7 +1073,7 @@ html, body {
           <div class="settings-section-title">About</div>
           <div class="about-card">
             <div class="about-version">AgriConvert Pro</div>
-            <div class="about-sub">v1.0.0 · Built for Malaysian durian farming</div>
+            <div class="about-sub">v1.1.0 · Built for Malaysian durian farming</div>
             <div class="about-tags">
               <span class="about-tag badge-metric">Offline Ready</span>
               <span class="about-tag badge-imperial">PWA</span>
@@ -1246,9 +1278,10 @@ function convert() {
 
   const units = UNITS[state.converter];
   const fromUnit = units[fromKey];
-  const baseVal = val * fromUnit.factor; // convert to base unit
+  const baseVal = val * fromUnit.factor;
 
-  container.innerHTML = '';
+  const grid = document.createElement('div');
+  grid.className = 'results-grid';
 
   Object.entries(units).forEach(([key, u]) => {
     if (key === fromKey) return;
@@ -1257,17 +1290,22 @@ function convert() {
     card.className = `result-item ${u.type}`;
     card.innerHTML = `
       <div class="result-main">
-        <div class="result-value">${fmt(result)} <span style="font-size:16px;color:var(--text2)">${u.symbol}</span></div>
+        <div class="result-value">${fmt(result)} <span style="font-size:14px;color:var(--text2);font-weight:600">${u.symbol}</span></div>
         <div class="result-label">${u.name}</div>
       </div>
-      <span class="result-badge badge-${u.type}">${u.type}</span>
-      <svg class="copy-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
-      </svg>
+      <div class="result-right">
+        <span class="result-badge badge-${u.type}">${u.type}</span>
+        <svg class="copy-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+        </svg>
+      </div>
     `;
     card.onclick = () => copyResult(card, fmt(result), u.symbol, val, fromUnit.symbol, u.name);
-    container.appendChild(card);
+    grid.appendChild(card);
   });
+
+  container.innerHTML = '';
+  container.appendChild(grid);
 }
 
 function clearInput() {
