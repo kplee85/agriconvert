@@ -9,11 +9,17 @@
 
 ## Changelog
 
+### v1.2.0 — Pressure Feature
+- **New: Pressure converter** — 5th tab in Convert (Bar · kPa · MPa · PSI · kg/cm² · atm · mmHg)
+- **New: Pressure Calculator** — 4th panel in Calculate with 3 modes:
+  - **Nozzle Checker** — operating pressure vs nozzle rated range → Safe / Too Low / Too High + droplet size estimate
+  - **Flow Rate Estimator** — rated flow at rated pressure → estimated flow at actual pressure (Q ∝ √P) + tank fill time
+  - **Gauge Reader** — any pressure unit → all 7 equivalents simultaneously + sprayer quick-reference guide
+
 ### v1.1.0 — UI Polish
 - **Even result cards** — responsive CSS grid (1 col phone → 2 col tablet → 3 col PC)
-- **Fixed Spray Mix layout** — dose rate row uses stable two-segment grid, no overflow shift
+- **Fixed Spray Mix layout** — dose rate row uses stable two-segment grid, no overflow shift on mobile
 - **Responsive design** — scales cleanly from 360px phones to full PC browser windows
-- **Tighter card layout** — badges and copy icon grouped right column, no misalignment
 - **Service worker cache bumped** — forces update on next visit
 
 ### v1.0.0 — Initial Release
@@ -28,20 +34,27 @@
 
 ## Features
 
-### Converters
-| Tab    | Units |
-|--------|-------|
-| Area   | m², Hectare, Acre, Rood, Square Pole, ft², 坪, 市亩, Relong |
-| Length | mm, cm, m, km, Inch, Foot, Yard, Chain, Rod, Link |
-| Weight | g, kg, Tonne, oz, lb, Bag 25kg, Bag 50kg, Pikul |
-| Volume | ml, cc, L, m³, fl oz, Pint, Quart, Gallon US, Gallon UK |
+### 📐 Converters
+| Tab      | Units |
+|----------|-------|
+| Area     | m², Hectare, Acre, Rood, Square Pole, ft², 坪, 市亩, Relong |
+| Length   | mm, cm, m, km, Inch, Foot, Yard, Chain, Rod, Link |
+| Weight   | g, kg, Tonne, oz, lb, Bag 25kg, Bag 50kg, Pikul |
+| Volume   | ml, cc, L, m³, fl oz, Pint, Quart, Gallon US, Gallon UK |
+| Pressure | Bar, kPa, MPa, PSI, kg/cm², atm, mmHg |
 
-### Calculators
-| Calculator  | What it does |
-|-------------|--------------|
-| Spray Mix   | Dose rate × tank size → product per tank + total for job |
-| Fertilizer  | kg/ha or kg/tree → total kg + bags needed + cost estimate |
-| Dilution %  | Target % or label rate → product + water volumes |
+### 🧪 Calculators
+| Calculator    | What it does |
+|---------------|--------------|
+| Spray Mix     | Dose rate × tank size → product per tank + total for job |
+| Fertilizer    | kg/ha or kg/tree → total kg + bags needed + cost estimate |
+| Dilution %    | Target % or label rate → product + water volumes |
+| Pressure      | Nozzle check · Flow rate estimator · Gauge unit reader |
+
+### ⚙️ Settings
+- Unit system preference (Malaysian / Metric / Imperial / Mixed)
+- Conversion history (last 20, clearable)
+- Offline-first via service worker
 
 ---
 
@@ -60,32 +73,52 @@ agriconvert-pwa/
 
 ---
 
-## Deploy
+## Deploy — GitHub Pages
 
-### GitHub Pages
-Settings → Pages → Source: Deploy from branch → main / root
-Live at: https://kplee85.github.io/agriconvert/
+All files are served from the `main` branch root.
 
-### Local NAS
-Copy folder to NAS web root → http://192.168.0.111/agriconvert/
+**Enable GitHub Pages:**
+1. Go to repo → **Settings** → **Pages**
+2. Source: Deploy from branch → `main` / `root`
+3. Click **Save**
+4. Live at: `https://kplee85.github.io/agriconvert/`
 
-### Install on Android
-Open URL in Chrome → ⋮ → Add to Home Screen
+**Install on Android:**
+1. Open the URL in Chrome
+2. Tap ⋮ → **Add to Home Screen**
+3. Opens full screen, works fully offline
+
+**Share with workers:**
+Send the URL via WhatsApp — anyone can open and install instantly.
 
 ---
 
-## Updating
+## Updating the App
 
-1. Edit files on GitHub
-2. Bump `CACHE_NAME` in `sw.js` (e.g. `agriconvert-v1.2.0`)
-3. Commit — GitHub Pages updates in ~1 minute
+Whenever a new version is ready:
+1. Edit `index.html` and `sw.js` on GitHub directly (click file → ✏️ edit)
+2. **Always bump `CACHE_NAME`** in `sw.js` — e.g. `agriconvert-v1.3.0`
+   - This forces all installed PWAs to update on next visit
+3. Commit changes — GitHub Pages goes live within ~1 minute
+4. Hard refresh on phone: hold reload → **Hard Reload**
 
 ---
 
 ## Roadmap
 
-- [ ] v1.2 — Tree Density & Spacing calculator
-- [ ] v1.2 — Yield normalizer (kg/tree, tonne/acre)
-- [ ] v1.3 — Saved spray tank presets
-- [ ] v1.3 — WhatsApp share on calculator results
-- [ ] v2.0 — Farm OS Notion integration
+### v1.3 — More Converters
+- [ ] **Temperature** — °C · °F · Kelvin (soil temp, cold storage, heat stress)
+- [ ] **Yield Normalizer** — kg/tree · tonne/acre · MT/ha (harvest benchmarking per season)
+
+### v1.4 — Smarter Calculators
+- [ ] **NPK Nutrient Calculator** — break down fertilizer label (e.g. 15-15-15) into pure N, P₂O₅, K₂O per bag and per acre; compare products side by side
+- [ ] **Saved Spray Tank Presets** — save named tanks (Knapsack 16L, Power Sprayer 200L) and recall instantly in Spray Mix calculator
+
+### v1.5 — Field Productivity
+- [ ] **Currency Converter** — RM · USD · SGD for input cost comparisons and export pricing
+- [ ] **WhatsApp Share** — share calculator results directly as a formatted message to workers or suppliers
+
+### v2.0 — Farm OS Integration
+- [ ] **Notion sync** — push spray records, fertilizer applications, and yield data directly into Farm OS Notion database
+- [ ] **Conversion history export** — send session log to Telegram or save to Notion daily log
+- [ ] **Orchard profile** — store orchard size, tree count, soil type; auto-fill calculator fields from saved profile
