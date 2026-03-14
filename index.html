@@ -653,7 +653,7 @@ html, body {
         <div>
           <div class="brand-name">AgriConvert</div>
         </div>
-        <div class="brand-version">v1.1</div>
+        <div class="brand-version">v1.2</div>
       </div>
       <div class="offline-pill" id="offlinePill">📴 Offline</div>
     </div>
@@ -696,6 +696,7 @@ html, body {
         <button class="sub-tab" data-unit="length" onclick="switchConverter('length')">📏 Length</button>
         <button class="sub-tab" data-unit="weight" onclick="switchConverter('weight')">⚖️ Weight</button>
         <button class="sub-tab" data-unit="volume" onclick="switchConverter('volume')">💧 Volume</button>
+        <button class="sub-tab" data-unit="pressure" onclick="switchConverter('pressure')">🌡️ Pressure</button>
       </div>
 
       <div class="converter-input">
@@ -725,6 +726,7 @@ html, body {
         <button class="calc-tab active" data-calc="spray" onclick="switchCalc('spray')">💦 Spray Mix</button>
         <button class="calc-tab" data-calc="fertilizer" onclick="switchCalc('fertilizer')">🌱 Fertilizer</button>
         <button class="calc-tab" data-calc="dilution" onclick="switchCalc('dilution')">🧪 Dilution</button>
+        <button class="calc-tab" data-calc="pressure" onclick="switchCalc('pressure')">🌡️ Pressure</button>
       </div>
 
       <div class="calc-body">
@@ -1033,6 +1035,255 @@ html, body {
           </div>
         </div>
 
+        <!-- ── PRESSURE ── -->
+        <div class="calc-panel" id="panel-pressure">
+
+          <!-- Mode selector -->
+          <div class="calc-card">
+            <div class="calc-card-title" style="color:var(--purple)">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/><path d="M18 2v4"/><path d="M22 2h-4"/>
+              </svg>
+              Pressure Mode
+            </div>
+            <div class="mode-toggle" id="press-mode-toggle">
+              <button class="mode-btn active" onclick="setPressMode('nozzle')">Nozzle Check</button>
+              <button class="mode-btn" onclick="setPressMode('flow')">Flow Rate</button>
+              <button class="mode-btn" onclick="setPressMode('gauge')">Gauge Read</button>
+            </div>
+          </div>
+
+          <!-- MODE 1: Nozzle Pressure Checker -->
+          <div id="press-nozzle-inputs">
+            <div class="calc-card">
+              <div class="calc-card-title" style="color:var(--purple)">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+                </svg>
+                Operating Pressure
+              </div>
+              <div class="field-group">
+                <label class="field-label">Your current pump / operating pressure</label>
+                <div class="field-row">
+                  <input type="number" class="field-input" id="p_operating" value="3" step="0.1" oninput="calcPressure()">
+                  <select class="field-select" id="p_operating_unit" onchange="calcPressure()">
+                    <option value="bar">Bar</option>
+                    <option value="psi">PSI</option>
+                    <option value="kpa">kPa</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="calc-card">
+              <div class="calc-card-title" style="color:var(--purple)">Nozzle Rated Range</div>
+              <div class="field-group">
+                <label class="field-label">Minimum rated pressure</label>
+                <div class="field-row">
+                  <input type="number" class="field-input" id="p_min" value="1.5" step="0.1" oninput="calcPressure()">
+                  <select class="field-select" id="p_min_unit" onchange="calcPressure()">
+                    <option value="bar">Bar</option>
+                    <option value="psi">PSI</option>
+                    <option value="kpa">kPa</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Maximum rated pressure</label>
+                <div class="field-row">
+                  <input type="number" class="field-input" id="p_max" value="4" step="0.1" oninput="calcPressure()">
+                  <select class="field-select" id="p_max_unit" onchange="calcPressure()">
+                    <option value="bar">Bar</option>
+                    <option value="psi">PSI</option>
+                    <option value="kpa">kPa</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="calc-card">
+              <div class="calc-card-title" style="color:var(--green)">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                Status
+              </div>
+              <div class="result-box">
+                <div class="result-row">
+                  <span class="result-row-label">Operating pressure</span>
+                  <span class="result-row-value" id="p_op_display">—</span>
+                </div>
+                <div class="result-row">
+                  <span class="result-row-label">Nozzle range</span>
+                  <span class="result-row-value" id="p_range_display">—</span>
+                </div>
+                <div class="result-row">
+                  <span class="result-row-label">Status</span>
+                  <span class="result-row-value" id="p_status">—</span>
+                </div>
+                <div class="result-row">
+                  <span class="result-row-label">Droplet size estimate</span>
+                  <span class="result-row-value" id="p_droplet">—</span>
+                </div>
+                <div class="result-row">
+                  <span class="result-row-label">% of max rated</span>
+                  <span class="result-row-value" id="p_pct_max">—</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MODE 2: Flow Rate Estimator -->
+          <div id="press-flow-inputs" style="display:none">
+            <div class="calc-card">
+              <div class="calc-card-title" style="color:var(--purple)">Rated Nozzle Flow</div>
+              <div class="field-group">
+                <label class="field-label">Flow rate at rated pressure (from label)</label>
+                <div class="dose-row">
+                  <div class="dose-segment">
+                    <input type="number" class="field-input" id="p_rated_flow" value="0.8" step="0.01" oninput="calcPressure()">
+                    <span class="field-text">L/min</span>
+                  </div>
+                  <div class="dose-sep">at</div>
+                  <div class="dose-segment">
+                    <input type="number" class="field-input sm" id="p_rated_press" value="3" step="0.1" oninput="calcPressure()">
+                    <select class="field-select" id="p_rated_press_unit" onchange="calcPressure()">
+                      <option value="bar">Bar</option>
+                      <option value="psi">PSI</option>
+                      <option value="kpa">kPa</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="calc-card">
+              <div class="calc-card-title" style="color:var(--purple)">Your Operating Pressure</div>
+              <div class="field-group">
+                <label class="field-label">Actual pump pressure</label>
+                <div class="field-row">
+                  <input type="number" class="field-input" id="p_actual_press" value="2" step="0.1" oninput="calcPressure()">
+                  <select class="field-select" id="p_actual_press_unit" onchange="calcPressure()">
+                    <option value="bar">Bar</option>
+                    <option value="psi">PSI</option>
+                    <option value="kpa">kPa</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Tank size (optional — for fill time)</label>
+                <div class="field-row">
+                  <input type="number" class="field-input" id="p_tank_size" value="16" step="1" oninput="calcPressure()">
+                  <span class="field-text" style="padding:0 8px">L</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="calc-card">
+              <div class="calc-card-title" style="color:var(--green)">Results</div>
+              <div class="result-box">
+                <div class="result-row">
+                  <span class="result-row-label">Estimated flow rate</span>
+                  <span class="result-row-value" id="p_flow_result">— L/min</span>
+                </div>
+                <div class="result-row">
+                  <span class="result-row-label">vs rated flow</span>
+                  <span class="result-row-value" id="p_flow_vs_rated">—</span>
+                </div>
+                <div class="result-row" id="p_fill_row">
+                  <span class="result-row-label">Time to fill tank</span>
+                  <span class="result-row-value" id="p_fill_time">— min</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MODE 3: Gauge / Pump Converter -->
+          <div id="press-gauge-inputs" style="display:none">
+            <div class="calc-card">
+              <div class="calc-card-title" style="color:var(--purple)">Pump / Gauge Reading</div>
+              <div class="field-group">
+                <label class="field-label">Enter pressure reading</label>
+                <div class="field-row">
+                  <input type="number" class="field-input" id="p_gauge_val" value="4" step="0.1" oninput="calcPressure()">
+                  <select class="field-select" id="p_gauge_unit" onchange="calcPressure()">
+                    <option value="bar">Bar</option>
+                    <option value="psi">PSI</option>
+                    <option value="kpa">kPa</option>
+                    <option value="mpa">MPa</option>
+                    <option value="kgcm2">kg/cm²</option>
+                    <option value="atm">atm</option>
+                    <option value="mmhg">mmHg</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="calc-card">
+              <div class="calc-card-title" style="color:var(--green)">All Equivalent Values</div>
+              <div class="result-box">
+                <div class="result-row">
+                  <span class="result-row-label">Bar</span>
+                  <span class="result-row-value" id="pg_bar">—</span>
+                </div>
+                <div class="result-row">
+                  <span class="result-row-label">PSI</span>
+                  <span class="result-row-value" id="pg_psi">—</span>
+                </div>
+                <div class="result-row">
+                  <span class="result-row-label">kPa</span>
+                  <span class="result-row-value" id="pg_kpa">—</span>
+                </div>
+                <div class="result-row">
+                  <span class="result-row-label">MPa</span>
+                  <span class="result-row-value" id="pg_mpa">—</span>
+                </div>
+                <div class="result-row">
+                  <span class="result-row-label">kg/cm²</span>
+                  <span class="result-row-value" id="pg_kgcm2">—</span>
+                </div>
+                <div class="result-row">
+                  <span class="result-row-label">atm</span>
+                  <span class="result-row-value" id="pg_atm">—</span>
+                </div>
+                <div class="result-row">
+                  <span class="result-row-label">mmHg</span>
+                  <span class="result-row-value" id="pg_mmhg">—</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sprayer quick reference -->
+            <div class="calc-card">
+              <div class="calc-card-title" style="color:var(--amber)">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+                </svg>
+                Sprayer Pressure Guide
+              </div>
+              <div class="result-box">
+                <div class="result-row">
+                  <span class="result-row-label">Knapsack sprayer</span>
+                  <span class="result-row-value" style="font-size:13px;color:var(--text2)">1.5 – 3.0 bar</span>
+                </div>
+                <div class="result-row">
+                  <span class="result-row-label">Power sprayer (foliar)</span>
+                  <span class="result-row-value" style="font-size:13px;color:var(--text2)">2.0 – 4.0 bar</span>
+                </div>
+                <div class="result-row">
+                  <span class="result-row-label">Mist blower</span>
+                  <span class="result-row-value" style="font-size:13px;color:var(--text2)">0.5 – 1.5 bar</span>
+                </div>
+                <div class="result-row">
+                  <span class="result-row-label">High-pressure boom</span>
+                  <span class="result-row-value" style="font-size:13px;color:var(--text2)">3.0 – 6.0 bar</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /panel-pressure -->
+
       </div><!-- /calc-body -->
     </div><!-- /screen-calculate -->
 
@@ -1073,7 +1324,7 @@ html, body {
           <div class="settings-section-title">About</div>
           <div class="about-card">
             <div class="about-version">AgriConvert Pro</div>
-            <div class="about-sub">v1.1.0 · Built for Malaysian durian farming</div>
+            <div class="about-sub">v1.2.0 · Built for Malaysian durian farming</div>
             <div class="about-tags">
               <span class="about-tag badge-metric">Offline Ready</span>
               <span class="about-tag badge-imperial">PWA</span>
@@ -1138,15 +1389,25 @@ const UNITS = {
     quart_us: { name: 'Quart (US)',      symbol: 'qt',       factor: 0.946353,       type: 'imperial' },
     gal_us:   { name: 'Gallon (US)',     symbol: 'gal US',   factor: 3.78541,        type: 'imperial' },
     gal_uk:   { name: 'Gallon (UK)',     symbol: 'gal UK',   factor: 4.54609,        type: 'imperial' },
+  },
+  pressure: {
+    bar:      { name: 'Bar',                    symbol: 'bar',    factor: 100000,        type: 'metric'   },
+    kpa:      { name: 'Kilopascal',             symbol: 'kPa',    factor: 1000,          type: 'metric'   },
+    mpa:      { name: 'Megapascal',             symbol: 'MPa',    factor: 1000000,       type: 'metric'   },
+    pa:       { name: 'Pascal',                 symbol: 'Pa',     factor: 1,             type: 'metric'   },
+    psi:      { name: 'PSI (lb/in²)',           symbol: 'PSI',    factor: 6894.757,      type: 'imperial' },
+    atm:      { name: 'Atmosphere (std)',        symbol: 'atm',    factor: 101325,        type: 'imperial' },
+    kgcm2:    { name: 'kg/cm² (tech atm)',      symbol: 'kg/cm²', factor: 98066.5,       type: 'metric'   },
+    mmhg:     { name: 'mmHg / Torr',            symbol: 'mmHg',   factor: 133.322,       type: 'imperial' },
   }
 };
 
 // Default units per system
 const DEFAULT_UNITS = {
-  my:       { area: 'acre',    length: 'm',     weight: 'kg',  volume: 'L'  },
-  metric:   { area: 'hectare', length: 'm',     weight: 'kg',  volume: 'L'  },
-  imperial: { area: 'acre',    length: 'foot',  weight: 'lb',  volume: 'gal_us' },
-  mixed:    { area: 'acre',    length: 'm',     weight: 'kg',  volume: 'L'  },
+  my:       { area: 'acre',    length: 'm',     weight: 'kg',  volume: 'L',  pressure: 'bar' },
+  metric:   { area: 'hectare', length: 'm',     weight: 'kg',  volume: 'L',  pressure: 'bar' },
+  imperial: { area: 'acre',    length: 'foot',  weight: 'lb',  volume: 'gal_us', pressure: 'psi' },
+  mixed:    { area: 'acre',    length: 'm',     weight: 'kg',  volume: 'L',  pressure: 'bar' },
 };
 
 const SYSTEM_LABELS = {
@@ -1166,6 +1427,7 @@ let state = {
   history: [],
   fertMode: 'area',
   dilMode: 'target',
+  pressCalcMode: 'nozzle',
 };
 
 // ═══════════════════════════════════════════════
@@ -1334,8 +1596,8 @@ function copyResult(card, value, symbol, fromVal, fromSym, toName) {
 // ═══════════════════════════════════════════════
 // HISTORY
 // ═══════════════════════════════════════════════
-const TYPE_ICONS = { area: '📐', length: '📏', weight: '⚖️', volume: '💧' };
-const TYPE_COLORS = { area: 'badge-metric', length: 'badge-imperial', weight: 'badge-asia', volume: 'badge-local' };
+const TYPE_ICONS = { area: '📐', length: '📏', weight: '⚖️', volume: '💧', pressure: '🌡️' };
+const TYPE_COLORS = { area: 'badge-metric', length: 'badge-imperial', weight: 'badge-asia', volume: 'badge-local', pressure: 'badge-local' };
 
 function addHistory(entry) {
   state.history.unshift(entry);
@@ -1548,6 +1810,118 @@ function calcDilution() {
 }
 
 // ═══════════════════════════════════════════════
+// PRESSURE CALCULATOR
+// ═══════════════════════════════════════════════
+
+// Convert any pressure unit → Pascal (base)
+const PRESS_TO_PA = { bar: 100000, psi: 6894.757, kpa: 1000, mpa: 1000000, kgcm2: 98066.5, atm: 101325, mmhg: 133.322, pa: 1 };
+
+function toBar(val, unit) { return (val * PRESS_TO_PA[unit]) / 100000; }
+function toPa(val, unit)  { return val * PRESS_TO_PA[unit]; }
+
+function setPressMode(mode) {
+  state.pressCalcMode = mode;
+  const btns = document.querySelectorAll('#press-mode-toggle .mode-btn');
+  btns.forEach((b, i) => b.classList.toggle('active',
+    (i === 0 && mode === 'nozzle') ||
+    (i === 1 && mode === 'flow')   ||
+    (i === 2 && mode === 'gauge')
+  ));
+  document.getElementById('press-nozzle-inputs').style.display = mode === 'nozzle' ? 'block' : 'none';
+  document.getElementById('press-flow-inputs').style.display   = mode === 'flow'   ? 'block' : 'none';
+  document.getElementById('press-gauge-inputs').style.display  = mode === 'gauge'  ? 'block' : 'none';
+  calcPressure();
+}
+
+function calcPressure() {
+  const mode = state.pressCalcMode;
+
+  if (mode === 'nozzle') {
+    const opVal  = parseFloat(document.getElementById('p_operating').value) || 0;
+    const opUnit = document.getElementById('p_operating_unit').value;
+    const minVal = parseFloat(document.getElementById('p_min').value) || 0;
+    const minUnit= document.getElementById('p_min_unit').value;
+    const maxVal = parseFloat(document.getElementById('p_max').value) || 0;
+    const maxUnit= document.getElementById('p_max_unit').value;
+
+    const opBar  = toBar(opVal,  opUnit);
+    const minBar = toBar(minVal, minUnit);
+    const maxBar = toBar(maxVal, maxUnit);
+
+    if (!opBar || !minBar || !maxBar) return;
+
+    const pctMax = maxBar > 0 ? (opBar / maxBar) * 100 : 0;
+
+    // Status determination
+    let status, statusColor, droplet;
+    if (opBar < minBar) {
+      status = '⚠️ TOO LOW';   statusColor = 'var(--amber)';
+      droplet = 'Very Coarse — poor coverage';
+    } else if (opBar > maxBar) {
+      status = '❌ TOO HIGH';  statusColor = 'var(--red)';
+      droplet = 'Very Fine / Mist — drift risk';
+    } else {
+      const pctRange = (opBar - minBar) / (maxBar - minBar);
+      status = '✅ SAFE';       statusColor = 'var(--green)';
+      if (pctRange < 0.35)      droplet = 'Coarse — good for soil drench';
+      else if (pctRange < 0.65) droplet = 'Medium — balanced coverage';
+      else                       droplet = 'Fine — good foliar coverage';
+    }
+
+    document.getElementById('p_op_display').textContent    = fmtCalc(opBar)  + ' bar  /  ' + fmtCalc(toBar(opVal, opUnit) * 14.5038) + ' PSI';
+    document.getElementById('p_range_display').textContent = fmtCalc(minBar) + ' – ' + fmtCalc(maxBar) + ' bar';
+    document.getElementById('p_status').textContent        = status;
+    document.getElementById('p_status').style.color        = statusColor;
+    document.getElementById('p_droplet').textContent       = droplet;
+    document.getElementById('p_pct_max').textContent       = fmtCalc(pctMax) + ' %';
+
+  } else if (mode === 'flow') {
+    // Q2 = Q1 × √(P2/P1)  — standard nozzle flow/pressure relationship
+    const q1       = parseFloat(document.getElementById('p_rated_flow').value)  || 0;
+    const p1Val    = parseFloat(document.getElementById('p_rated_press').value) || 0;
+    const p1Unit   = document.getElementById('p_rated_press_unit').value;
+    const p2Val    = parseFloat(document.getElementById('p_actual_press').value)|| 0;
+    const p2Unit   = document.getElementById('p_actual_press_unit').value;
+    const tankSize = parseFloat(document.getElementById('p_tank_size').value)   || 0;
+
+    const p1Pa = toPa(p1Val, p1Unit);
+    const p2Pa = toPa(p2Val, p2Unit);
+
+    if (!q1 || !p1Pa || !p2Pa) return;
+
+    const q2    = q1 * Math.sqrt(p2Pa / p1Pa);
+    const delta = ((q2 - q1) / q1) * 100;
+    const sign  = delta >= 0 ? '+' : '';
+
+    document.getElementById('p_flow_result').textContent   = fmtCalc(q2) + ' L/min';
+    document.getElementById('p_flow_vs_rated').textContent = sign + fmtCalc(delta) + '% vs rated';
+    document.getElementById('p_flow_vs_rated').style.color = delta >= 0 ? 'var(--amber)' : 'var(--blue)';
+
+    const fillRow = document.getElementById('p_fill_row');
+    if (tankSize && q2 > 0) {
+      fillRow.style.display = 'flex';
+      document.getElementById('p_fill_time').textContent = fmtCalc(tankSize / q2) + ' min';
+    } else {
+      fillRow.style.display = 'none';
+    }
+
+  } else if (mode === 'gauge') {
+    const val  = parseFloat(document.getElementById('p_gauge_val').value) || 0;
+    const unit = document.getElementById('p_gauge_unit').value;
+    if (!val) return;
+
+    const pa = toPa(val, unit);
+    document.getElementById('pg_bar').textContent   = fmtCalc(pa / PRESS_TO_PA['bar'])   + ' bar';
+    document.getElementById('pg_psi').textContent   = fmtCalc(pa / PRESS_TO_PA['psi'])   + ' PSI';
+    document.getElementById('pg_kpa').textContent   = fmtCalc(pa / PRESS_TO_PA['kpa'])   + ' kPa';
+    document.getElementById('pg_mpa').textContent   = fmtCalc(pa / PRESS_TO_PA['mpa'])   + ' MPa';
+    document.getElementById('pg_kgcm2').textContent = fmtCalc(pa / PRESS_TO_PA['kgcm2']) + ' kg/cm²';
+    document.getElementById('pg_atm').textContent   = fmtCalc(pa / PRESS_TO_PA['atm'])   + ' atm';
+    document.getElementById('pg_mmhg').textContent  = fmtCalc(pa / PRESS_TO_PA['mmhg'])  + ' mmHg';
+  }
+}
+
+// ═══════════════════════════════════════════════
 // UTILITIES
 // ═══════════════════════════════════════════════
 function fmtCalc(val) {
@@ -1597,6 +1971,7 @@ function init() {
   calcSpray();
   calcFert();
   calcDilution();
+  calcPressure();
   updateOnlineStatus();
 }
 
