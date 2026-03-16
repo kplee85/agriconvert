@@ -2690,7 +2690,7 @@ function calcPressure() {
 // Real validation uses expiry date stored on activation.
 
 function tokenIsValidFormat(token) {
-  return /^AGRI-20\d{2}-[A-Z0-9]{6}-[A-Z0-9]{2}$/.test(token.toUpperCase().trim());
+  return /^AGRI-20\d{2}-[A-Z0-9]{3,8}-[A-Z0-9]{2,4}$/.test(token.toUpperCase().trim());
 }
 
 function loadLicence() {
@@ -2899,7 +2899,7 @@ function tokenInputFormat(el) {
     fb.style.color = 'var(--green)';
     el.className = 'token-input valid';
   } else if (v.length >= 15) {
-    fb.textContent = '❌ Invalid format. Expected: AGRI-2026-XXXXXX-XX';
+    fb.textContent = '❌ Invalid format. Expected: AGRI-2026-XXXXX-XX';
     fb.style.color = 'var(--red)';
     el.className = 'token-input invalid';
   } else {
