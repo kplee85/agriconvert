@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="AgriConvert">
 <meta name="description" content="Agricultural unit converter and calculator for field use">
 <link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
 <title>AgriConvert Pro</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@400;500;600;700;800&display=swap');
@@ -602,6 +603,391 @@ html, body {
   font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px;
   font-family: var(--mono);
 }
+/* ── PREMIUM SYSTEM ── */
+
+/* GPS soft-lock overlay */
+.gps-lock-banner {
+  margin: 0 0 12px;
+  background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(168,85,247,0.12));
+  border: 1px solid rgba(245,158,11,0.3);
+  border-radius: 14px; padding: 16px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.gps-lock-banner-top {
+  display: flex; align-items: center; gap: 10px;
+}
+.gps-lock-icon {
+  font-size: 24px; flex: none;
+}
+.gps-lock-title {
+  font-size: 14px; font-weight: 700; color: var(--text);
+}
+.gps-lock-sub {
+  font-size: 12px; color: var(--text2); margin-top: 2px; line-height: 1.4;
+}
+.gps-lock-btns {
+  display: flex; gap: 8px;
+}
+.btn-trial {
+  flex: 1; padding: 10px; border: none; border-radius: 10px;
+  background: linear-gradient(135deg, var(--amber), #d97706);
+  color: white; font-size: 13px; font-weight: 700;
+  font-family: var(--sans); cursor: pointer; transition: opacity 0.2s;
+}
+.btn-trial:hover { opacity: 0.9; }
+.btn-token {
+  flex: 1; padding: 10px; border: 1px solid var(--border2);
+  border-radius: 10px; background: var(--bg3);
+  color: var(--text2); font-size: 13px; font-weight: 600;
+  font-family: var(--sans); cursor: pointer; transition: all 0.2s;
+}
+.btn-token:hover { border-color: var(--purple); color: var(--purple); }
+
+/* Dimmed GPS tools overlay */
+.gps-dimmed-wrap {
+  position: relative; pointer-events: none;
+}
+.gps-dimmed-wrap::after {
+  content: ''; position: absolute; inset: 0;
+  background: rgba(10,22,40,0.65);
+  border-radius: 14px; z-index: 2;
+  backdrop-filter: blur(2px);
+}
+.gps-dimmed-tap {
+  position: absolute; inset: 0; z-index: 3;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border-radius: 14px;
+  pointer-events: all;
+}
+.gps-dimmed-label {
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 20px; padding: 6px 14px;
+  font-size: 12px; font-weight: 700; color: var(--text2);
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* Trial countdown pill */
+.trial-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; font-family: var(--mono);
+  background: var(--amber-bg); color: var(--amber);
+  border: 1px solid rgba(245,158,11,0.25); margin-bottom: 10px;
+}
+.active-pill {
+  background: var(--green-bg); color: var(--green);
+  border: 1px solid rgba(34,197,94,0.25);
+}
+.expired-pill {
+  background: rgba(239,68,68,0.08); color: var(--red);
+  border: 1px solid rgba(239,68,68,0.2);
+}
+
+/* Modal */
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+  display: flex; align-items: flex-end; justify-content: center;
+  padding: 0 0 env(safe-area-inset-bottom,0);
+}
+.modal-sheet {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 20px 20px 0 0; width: 100%; max-width: 480px;
+  max-height: 90vh; overflow-y: auto; padding: 20px;
+  animation: slideUp 0.25s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+.modal-handle {
+  width: 36px; height: 4px; background: var(--border2);
+  border-radius: 2px; margin: 0 auto 20px;
+}
+.modal-title {
+  font-size: 18px; font-weight: 800; text-align: center;
+  margin-bottom: 6px;
+  background: linear-gradient(135deg, #fff 60%, var(--amber));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.modal-price {
+  text-align: center; margin-bottom: 20px;
+}
+.modal-price-big {
+  font-size: 32px; font-weight: 800; font-family: var(--mono);
+  color: var(--amber);
+}
+.modal-price-period {
+  font-size: 14px; color: var(--text3); margin-left: 4px;
+}
+
+.feature-list {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px; margin-bottom: 16px;
+}
+.feature-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 0; border-bottom: 1px solid var(--border);
+  font-size: 13px; color: var(--text); font-weight: 500;
+}
+.feature-item:last-child { border-bottom: none; padding-bottom: 0; }
+.feature-check { color: var(--green); font-size: 14px; flex: none; }
+
+/* Payment section */
+.pay-section {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px; margin-bottom: 12px;
+}
+.pay-title {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--text3); font-family: var(--mono);
+  margin-bottom: 10px;
+}
+.pay-row {
+  display: flex; justify-content: space-between;
+  padding: 5px 0; font-size: 13px; border-bottom: 1px solid var(--border);
+}
+.pay-row:last-child { border-bottom: none; }
+.pay-key { color: var(--text2); font-weight: 500; }
+.pay-val { color: var(--text); font-weight: 600; font-family: var(--mono); }
+
+.contact-btns { display: flex; gap: 8px; margin-bottom: 12px; }
+.btn-whatsapp {
+  flex: 1; padding: 12px; border: none; border-radius: 10px;
+  background: #25d366; color: white;
+  font-size: 13px; font-weight: 700; font-family: var(--sans);
+  cursor: pointer; display: flex; align-items: center;
+  justify-content: center; gap: 6px; text-decoration: none;
+}
+.btn-form {
+  flex: 1; padding: 12px; border: 1px solid var(--border2);
+  border-radius: 10px; background: var(--bg3);
+  color: var(--text2); font-size: 13px; font-weight: 700;
+  font-family: var(--sans); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px; text-decoration: none;
+}
+
+/* Token input */
+.token-input-wrap {
+  position: relative; margin-bottom: 10px;
+}
+.token-input {
+  width: 100%; height: 52px;
+  background: var(--bg3); border: 2px solid var(--border2);
+  border-radius: 10px; color: var(--text);
+  font-size: 16px; font-weight: 700; font-family: var(--mono);
+  padding: 0 16px; outline: none; letter-spacing: 1px;
+  text-transform: uppercase; transition: border-color 0.2s;
+}
+.token-input:focus { border-color: var(--purple); }
+.token-input.valid { border-color: var(--green); }
+.token-input.invalid { border-color: var(--red); }
+.token-feedback {
+  font-size: 12px; font-weight: 600; margin-top: 6px;
+  min-height: 18px; font-family: var(--mono);
+}
+
+.modal-close {
+  width: 100%; padding: 12px; border: 1px solid var(--border2);
+  border-radius: 10px; background: none; color: var(--text3);
+  font-size: 13px; font-weight: 600; font-family: var(--sans);
+  cursor: pointer; margin-top: 8px; transition: all 0.2s;
+}
+.modal-close:hover { color: var(--text); border-color: var(--text3); }
+
+/* Settings premium card */
+.premium-status-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px; border-bottom: 1px solid var(--border);
+}
+.premium-status-icon { font-size: 20px; flex: none; }
+.premium-status-info { flex: 1; }
+.premium-status-title { font-size: 14px; font-weight: 700; color: var(--text); }
+.premium-status-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+</style>
+.gps-tabs {
+  flex: none; display: flex;
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  overflow-x: auto; scrollbar-width: none;
+}
+.gps-tabs::-webkit-scrollbar { display: none; }
+
+.gps-tab {
+  flex: 1; min-width: 80px; padding: 10px 8px;
+  font-size: 12px; font-weight: 600; font-family: var(--sans);
+  background: none; border: none; color: var(--text3);
+  cursor: pointer; text-align: center; white-space: nowrap;
+  position: relative; transition: color 0.2s;
+}
+.gps-tab.active { color: var(--green); }
+.gps-tab.active::after {
+  content: ''; position: absolute; bottom: 0; left: 4px; right: 4px;
+  height: 2px; background: var(--green); border-radius: 2px;
+}
+
+.gps-body {
+  flex: 1; overflow-y: auto; padding: 16px;
+  -webkit-overflow-scrolling: touch;
+}
+.gps-body::-webkit-scrollbar { width: 4px; }
+.gps-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.gps-panel { display: none; }
+.gps-panel.active { display: block; }
+
+/* GPS action button — big tap target */
+.gps-btn {
+  width: 100%; padding: 16px; border: none; border-radius: 12px;
+  font-size: 15px; font-weight: 700; font-family: var(--sans);
+  cursor: pointer; transition: all 0.2s; display: flex;
+  align-items: center; justify-content: center; gap: 8px;
+  margin-bottom: 12px;
+}
+.gps-btn-primary {
+  background: linear-gradient(135deg, var(--green), var(--green-dim));
+  color: white; box-shadow: 0 4px 16px var(--green-glow);
+}
+.gps-btn-primary:active { transform: scale(0.98); opacity: 0.9; }
+.gps-btn-primary:disabled {
+  background: var(--surface); color: var(--text3);
+  box-shadow: none; cursor: not-allowed;
+}
+.gps-btn-secondary {
+  background: var(--bg3); color: var(--text2);
+  border: 1px solid var(--border2);
+}
+.gps-btn-danger {
+  background: rgba(239,68,68,0.08); color: var(--red);
+  border: 1px solid rgba(239,68,68,0.2);
+}
+
+/* GPS status pill */
+.gps-status-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 20px; font-size: 12px;
+  font-weight: 600; font-family: var(--mono); margin-bottom: 12px;
+}
+.gps-status-pill.acquiring {
+  background: var(--amber-bg); color: var(--amber);
+  border: 1px solid rgba(245,158,11,0.2);
+}
+.gps-status-pill.got {
+  background: var(--green-bg); color: var(--green);
+  border: 1px solid rgba(34,197,94,0.2);
+}
+.gps-status-pill.error {
+  background: rgba(239,68,68,0.08); color: var(--red);
+  border: 1px solid rgba(239,68,68,0.2);
+}
+
+/* GPS coord display */
+.coord-box {
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 10px; padding: 14px 16px; margin-bottom: 12px;
+}
+.coord-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 4px 0; border-bottom: 1px solid var(--border);
+}
+.coord-row:last-child { border-bottom: none; padding-bottom: 0; }
+.coord-label { font-size: 11px; color: var(--text2); font-weight: 600; text-transform: uppercase; }
+.coord-value { font-size: 16px; font-weight: 700; font-family: var(--mono); color: var(--green); }
+.coord-value.dim { font-size: 13px; color: var(--text2); }
+
+/* GPS map container */
+#gps-map-wrap, #dist-map-wrap, #bound-map-wrap {
+  border-radius: 10px; overflow: hidden;
+  border: 1px solid var(--border2); margin-bottom: 12px;
+  display: none;
+}
+#gps-map, #dist-map, #bound-map { height: 200px; width: 100%; }
+
+/* Stamp list */
+.stamp-list { display: flex; flex-direction: column; gap: 8px; }
+.stamp-item {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 14px;
+  display: flex; align-items: flex-start; gap: 10px;
+}
+.stamp-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--green); flex: none; margin-top: 4px;
+}
+.stamp-info { flex: 1; min-width: 0; }
+.stamp-label { font-size: 13px; font-weight: 700; color: var(--text); }
+.stamp-coords { font-size: 11px; font-family: var(--mono); color: var(--green); margin-top: 2px; }
+.stamp-meta { font-size: 10px; color: var(--text3); margin-top: 2px; }
+.stamp-actions { display: flex; gap: 6px; flex: none; }
+.stamp-copy-btn {
+  background: none; border: 1px solid var(--border2); color: var(--text3);
+  border-radius: 6px; padding: 4px 8px; font-size: 11px; cursor: pointer;
+  font-family: var(--sans); font-weight: 600; transition: all 0.15s;
+}
+.stamp-copy-btn:hover { border-color: var(--green); color: var(--green); }
+
+/* Tree logger */
+.tree-session-bar {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 14px; margin-bottom: 12px;
+  display: flex; align-items: center; gap: 10px;
+}
+.tree-session-name { flex: 1; font-size: 13px; font-weight: 600; color: var(--text); }
+.tree-count-badge {
+  background: var(--green-bg); color: var(--green);
+  border: 1px solid rgba(34,197,94,0.2);
+  font-size: 11px; font-weight: 700; padding: 3px 8px;
+  border-radius: 12px; font-family: var(--mono);
+}
+.tree-item {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 14px; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 10px;
+}
+.tree-id {
+  font-size: 12px; font-weight: 700; font-family: var(--mono);
+  color: var(--green); background: var(--green-bg);
+  border: 1px solid rgba(34,197,94,0.2);
+  padding: 3px 8px; border-radius: 6px; flex: none;
+}
+.tree-info { flex: 1; min-width: 0; }
+.tree-label-text { font-size: 13px; font-weight: 600; color: var(--text); }
+.tree-coords-text { font-size: 10px; font-family: var(--mono); color: var(--text3); margin-top: 1px; }
+
+/* Boundary points */
+.boundary-point {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 14px; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 10px;
+}
+.boundary-num {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--purple-bg); color: var(--purple);
+  border: 1px solid rgba(168,85,247,0.3);
+  font-size: 12px; font-weight: 700; font-family: var(--mono);
+  display: flex; align-items: center; justify-content: center; flex: none;
+}
+.boundary-coords { font-size: 11px; font-family: var(--mono); color: var(--text2); flex: 1; }
+
+/* Distance result */
+.dist-result-big {
+  text-align: center; padding: 20px;
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 12px; margin-bottom: 12px;
+}
+.dist-result-value {
+  font-size: 42px; font-weight: 800; font-family: var(--mono);
+  color: var(--green); letter-spacing: -1px;
+}
+.dist-result-unit { font-size: 18px; color: var(--text2); font-weight: 600; }
+.dist-bearing { font-size: 13px; color: var(--text3); margin-top: 6px; font-family: var(--mono); }
+
+/* Spinner */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white; border-radius: 50%;
+  animation: spin 0.8s linear infinite; display: inline-block;
+}
 </style>
 </head>
 <body>
@@ -653,7 +1039,7 @@ html, body {
         <div>
           <div class="brand-name">AgriConvert</div>
         </div>
-        <div class="brand-version">v1.2</div>
+        <div class="brand-version">v1.3.1</div>
       </div>
       <div class="offline-pill" id="offlinePill">📴 Offline</div>
     </div>
@@ -674,6 +1060,13 @@ html, body {
           <line x1="8" y1="14" x2="12" y2="14"/>
         </svg>
         Calculate
+      </button>
+      <button class="main-tab" data-tab="gps" onclick="switchMain('gps')">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+          <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+          <circle cx="12" cy="10" r="3"/>
+        </svg>
+        GPS
       </button>
       <button class="main-tab" data-tab="settings" onclick="switchMain('settings')">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
@@ -1287,9 +1680,269 @@ html, body {
       </div><!-- /calc-body -->
     </div><!-- /screen-calculate -->
 
+    <!-- ═══ GPS SCREEN ═══ -->
+    <div class="screen" id="screen-gps">
+
+      <!-- Premium lock banner — shown when not unlocked -->
+      <div id="gps-lock-banner-wrap" style="padding:12px 16px 0;display:none">
+        <div class="gps-lock-banner">
+          <div class="gps-lock-banner-top">
+            <div class="gps-lock-icon">🌟</div>
+            <div>
+              <div class="gps-lock-title">GPS Tools — Premium</div>
+              <div class="gps-lock-sub">RM 9.90 one-time · All 4 GPS tools · Works offline</div>
+            </div>
+          </div>
+          <div id="trial-countdown-wrap" style="display:none">
+            <div class="trial-pill" id="trial-pill">⏳ Trial: 14 days remaining</div>
+          </div>
+          <div class="gps-lock-btns" id="gps-lock-action-btns">
+            <button class="btn-trial" onclick="showUpgradeModal()">🌟 Unlock GPS — RM 9.90</button>
+            <button class="btn-token" onclick="showTokenModal()">🔑 Enter Token</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active premium banner — shown when unlocked -->
+      <div id="gps-active-banner-wrap" style="padding:12px 16px 0;display:none">
+        <div class="trial-pill active-pill" id="gps-active-pill">✅ GPS Premium Active</div>
+      </div>
+
+      <div class="gps-tabs">
+        <button class="gps-tab active" data-gps="stamp"    onclick="switchGPS('stamp')">📌 Stamp</button>
+        <button class="gps-tab"        data-gps="tree"     onclick="switchGPS('tree')">🌳 Trees</button>
+        <button class="gps-tab"        data-gps="boundary" onclick="switchGPS('boundary')">📐 Boundary</button>
+        <button class="gps-tab"        data-gps="distance" onclick="switchGPS('distance')">📏 Distance</button>
+      </div>
+
+      <div class="gps-body">
+
+        <!-- ── LOCATION STAMP ── -->
+        <div class="gps-panel active" id="panel-stamp">
+          <div id="stamp-lock-wrap" class="gps-dimmed-wrap" style="display:none">
+            <div class="calc-card" style="pointer-events:none;opacity:0.5">
+              <div class="calc-card-title" style="color:var(--green)">📌 Location Stamp</div>
+              <div style="height:44px;background:var(--bg3);border-radius:8px;margin-bottom:10px"></div>
+              <div style="height:80px;background:var(--bg3);border-radius:8px"></div>
+            </div>
+            <div class="gps-dimmed-tap" onclick="showUpgradeModal()">
+              <div class="gps-dimmed-label">🔒 Premium Feature — Tap to Unlock</div>
+            </div>
+          </div>
+          <div id="stamp-unlock-wrap">
+            <div class="calc-card">
+              <div class="calc-card-title" style="color:var(--green)">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
+                </svg>
+                Get My Location
+              </div>
+              <button class="gps-btn gps-btn-primary" id="stamp-get-btn" onclick="stampGetLocation()">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
+                </svg>
+                Tap to Get Location
+              </button>
+              <div id="stamp-status"></div>
+              <div class="coord-box" id="stamp-coord-box" style="display:none">
+                <div class="coord-row"><span class="coord-label">Latitude</span><span class="coord-value" id="stamp-lat">—</span></div>
+                <div class="coord-row"><span class="coord-label">Longitude</span><span class="coord-value" id="stamp-lng">—</span></div>
+                <div class="coord-row"><span class="coord-label">Accuracy</span><span class="coord-value dim" id="stamp-acc">—</span></div>
+              </div>
+              <div id="gps-map-wrap"><div id="gps-map"></div></div>
+              <div id="stamp-save-section" style="display:none">
+                <div class="field-group">
+                  <label class="field-label">Note / Label (optional)</label>
+                  <input type="text" id="stamp-note" placeholder="e.g. Pump house, Sick tree, Corner post..."
+                    style="width:100%;height:44px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:14px;padding:0 12px;outline:none;font-family:var(--sans);">
+                </div>
+                <div style="display:flex;gap:8px">
+                  <button class="gps-btn gps-btn-secondary" style="flex:1;margin-bottom:0" onclick="stampCopyCoords()">📋 Copy</button>
+                  <button class="gps-btn gps-btn-primary"   style="flex:1;margin-bottom:0" onclick="stampSave()">💾 Save Stamp</button>
+                </div>
+              </div>
+            </div>
+            <div class="calc-card" id="stamp-saved-card">
+              <div class="calc-card-title" style="color:var(--green)">Saved Stamps</div>
+              <div id="stamp-list"><div class="empty-history">No stamps yet. Tap "Get Location" to start.</div></div>
+              <button class="gps-btn gps-btn-danger" style="margin-top:10px;margin-bottom:0" onclick="clearStamps()">🗑️ Clear All Stamps</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── TREE LOGGER ── -->
+        <div class="gps-panel" id="panel-tree">
+          <div id="tree-lock-wrap" class="gps-dimmed-wrap" style="display:none">
+            <div class="calc-card" style="pointer-events:none;opacity:0.5">
+              <div class="calc-card-title" style="color:var(--green)">🌳 Tree Logger</div>
+              <div style="height:44px;background:var(--bg3);border-radius:8px;margin-bottom:10px"></div>
+              <div style="height:120px;background:var(--bg3);border-radius:8px"></div>
+            </div>
+            <div class="gps-dimmed-tap" onclick="showUpgradeModal()">
+              <div class="gps-dimmed-label">🔒 Premium Feature — Tap to Unlock</div>
+            </div>
+          </div>
+          <div id="tree-unlock-wrap">
+            <div class="calc-card">
+              <div class="calc-card-title" style="color:var(--green)">Session</div>
+              <div class="tree-session-bar">
+                <input type="text" id="tree-session-name" value="Orchard A — Session 1"
+                  style="flex:1;background:none;border:none;color:var(--text);font-size:13px;font-weight:600;outline:none;font-family:var(--sans);">
+                <span class="tree-count-badge" id="tree-count-badge">0 trees</span>
+              </div>
+              <button class="gps-btn gps-btn-primary" id="tree-log-btn" onclick="treeLogLocation()">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
+                </svg>
+                Log This Tree
+              </button>
+              <div id="tree-status"></div>
+              <div class="field-group" style="margin-top:8px">
+                <label class="field-label">Custom label (optional)</label>
+                <input type="text" id="tree-custom-label" placeholder="e.g. Sick tree, Low yield, Experiment A"
+                  style="width:100%;height:44px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:14px;padding:0 12px;outline:none;font-family:var(--sans);">
+              </div>
+            </div>
+            <div class="calc-card">
+              <div class="calc-card-title" style="color:var(--green)">
+                Logged Trees
+                <button class="stamp-copy-btn" style="margin-left:auto" onclick="treeExportCSV()">📋 Export CSV</button>
+              </div>
+              <div id="tree-list"><div class="empty-history">No trees logged yet.</div></div>
+              <div style="display:flex;gap:8px;margin-top:10px">
+                <button class="gps-btn gps-btn-secondary" style="flex:1;margin-bottom:0" onclick="treeNewSession()">+ New Session</button>
+                <button class="gps-btn gps-btn-danger"    style="flex:1;margin-bottom:0" onclick="treeClearSession()">🗑️ Clear</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── PLOT BOUNDARY MAPPER ── -->
+        <div class="gps-panel" id="panel-boundary">
+          <div id="boundary-lock-wrap" class="gps-dimmed-wrap" style="display:none">
+            <div class="calc-card" style="pointer-events:none;opacity:0.5">
+              <div class="calc-card-title" style="color:var(--purple)">📐 Boundary Mapper</div>
+              <div style="height:44px;background:var(--bg3);border-radius:8px;margin-bottom:10px"></div>
+              <div style="height:160px;background:var(--bg3);border-radius:8px"></div>
+            </div>
+            <div class="gps-dimmed-tap" onclick="showUpgradeModal()">
+              <div class="gps-dimmed-label">🔒 Premium Feature — Tap to Unlock</div>
+            </div>
+          </div>
+          <div id="boundary-unlock-wrap">
+            <div class="calc-card">
+              <div class="calc-card-title" style="color:var(--purple)">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+                  <line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>
+                </svg>
+                Walk the Boundary
+              </div>
+              <p style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.6">Walk to each corner of your plot. Tap <strong style="color:var(--text)">Add Corner Point</strong> at each corner. Minimum 3 points needed.</p>
+              <button class="gps-btn gps-btn-primary" id="boundary-add-btn" onclick="boundaryAddPoint()">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
+                </svg>
+                + Add Corner Point
+              </button>
+              <div id="boundary-status"></div>
+            </div>
+            <div class="calc-card" id="boundary-points-card">
+              <div class="calc-card-title" style="color:var(--purple)">Corner Points <span id="boundary-pt-count" style="margin-left:auto;font-size:11px;color:var(--text3)">0 points</span></div>
+              <div id="boundary-points-list"><div class="empty-history">No points yet.</div></div>
+              <div style="display:flex;gap:8px;margin-top:10px">
+                <button class="gps-btn gps-btn-secondary" style="flex:1;margin-bottom:0" onclick="boundaryUndo()">↩ Remove Last</button>
+                <button class="gps-btn gps-btn-danger"    style="flex:1;margin-bottom:0" onclick="boundaryClear()">🗑️ Clear</button>
+              </div>
+            </div>
+            <div id="bound-map-wrap"><div id="bound-map"></div></div>
+            <div class="calc-card" id="boundary-result-card" style="display:none">
+              <div class="calc-card-title" style="color:var(--green)">Calculated Area</div>
+              <div class="result-box">
+                <div class="result-row"><span class="result-row-label">Acres</span><span class="result-row-value" id="bound-acres">—</span></div>
+                <div class="result-row"><span class="result-row-label">Hectares</span><span class="result-row-value" id="bound-ha">—</span></div>
+                <div class="result-row"><span class="result-row-label">Relong</span><span class="result-row-value" id="bound-relong">—</span></div>
+                <div class="result-row"><span class="result-row-label">m²</span><span class="result-row-value" id="bound-m2">—</span></div>
+                <div class="result-row"><span class="result-row-label">Perimeter</span><span class="result-row-value" id="bound-perim">—</span></div>
+                <div class="result-row"><span class="result-row-label">Corner points</span><span class="result-row-value" id="bound-pts">—</span></div>
+              </div>
+              <p style="font-size:11px;color:var(--text3);margin-top:10px;line-height:1.5">⚠️ Estimate only. Phone GPS accuracy ±3–10m.</p>
+              <button class="gps-btn gps-btn-secondary" style="margin-top:10px;margin-bottom:0" onclick="boundaryCopyResult()">📋 Copy Result</button>
+            </div>
+            <button class="gps-btn gps-btn-primary" id="boundary-calc-btn" style="display:none" onclick="boundaryCalculate()">📐 Calculate Area</button>
+          </div>
+        </div>
+
+        <!-- ── DISTANCE MEASURER ── -->
+        <div class="gps-panel" id="panel-distance">
+          <div id="distance-lock-wrap" class="gps-dimmed-wrap" style="display:none">
+            <div class="calc-card" style="pointer-events:none;opacity:0.5">
+              <div class="calc-card-title" style="color:var(--blue)">📏 Distance Measurer</div>
+              <div style="height:44px;background:var(--bg3);border-radius:8px;margin-bottom:10px"></div>
+              <div style="height:44px;background:var(--bg3);border-radius:8px"></div>
+            </div>
+            <div class="gps-dimmed-tap" onclick="showUpgradeModal()">
+              <div class="gps-dimmed-label">🔒 Premium Feature — Tap to Unlock</div>
+            </div>
+          </div>
+          <div id="distance-unlock-wrap">
+            <div class="calc-card">
+              <div class="calc-card-title" style="color:var(--blue)">Point A</div>
+              <button class="gps-btn gps-btn-primary" id="dist-a-btn" onclick="distSetPoint('A')">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
+                </svg>
+                📍 Set Point A — Stand Here &amp; Tap
+              </button>
+              <div class="coord-box" id="dist-a-box" style="display:none">
+                <div class="coord-row"><span class="coord-label">Point A</span><span class="coord-value dim" id="dist-a-coords">—</span></div>
+                <div class="coord-row"><span class="coord-label">Accuracy</span><span class="coord-value dim" id="dist-a-acc">—</span></div>
+              </div>
+            </div>
+            <div class="calc-card">
+              <div class="calc-card-title" style="color:var(--blue)">Point B</div>
+              <button class="gps-btn gps-btn-primary" id="dist-b-btn" onclick="distSetPoint('B')">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
+                </svg>
+                📍 Set Point B — Walk There &amp; Tap
+              </button>
+              <div class="coord-box" id="dist-b-box" style="display:none">
+                <div class="coord-row"><span class="coord-label">Point B</span><span class="coord-value dim" id="dist-b-coords">—</span></div>
+                <div class="coord-row"><span class="coord-label">Accuracy</span><span class="coord-value dim" id="dist-b-acc">—</span></div>
+              </div>
+            </div>
+            <div id="dist-map-wrap"><div id="dist-map"></div></div>
+            <div class="calc-card" id="dist-result-card" style="display:none">
+              <div class="calc-card-title" style="color:var(--green)">Distance</div>
+              <div class="dist-result-big">
+                <div><span class="dist-result-value" id="dist-val-m">—</span> <span class="dist-result-unit">m</span></div>
+                <div class="dist-bearing" id="dist-bearing-text">—</div>
+              </div>
+              <div class="result-box">
+                <div class="result-row"><span class="result-row-label">Feet</span><span class="result-row-value" id="dist-ft">—</span></div>
+                <div class="result-row"><span class="result-row-label">Chains (Rantai)</span><span class="result-row-value" id="dist-chain">—</span></div>
+                <div class="result-row"><span class="result-row-label">Kilometers</span><span class="result-row-value" id="dist-km">—</span></div>
+              </div>
+              <button class="gps-btn gps-btn-secondary" style="margin-top:10px;margin-bottom:0" onclick="distCopyResult()">📋 Copy Result</button>
+            </div>
+            <button class="gps-btn gps-btn-danger" onclick="distReset()">↺ Reset</button>
+          </div>
+        </div>
+
+      </div><!-- /gps-body -->
+    </div><!-- /screen-gps -->
+
     <!-- ═══ SETTINGS SCREEN ═══ -->
     <div class="screen" id="screen-settings">
       <div class="settings-body">
+
+        <div class="settings-section">
+          <div class="settings-section-title">Premium · GPS</div>
+          <div class="settings-card" id="premium-settings-card">
+            <!-- Populated by JS based on licence state -->
+          </div>
+        </div>
 
         <div class="settings-section">
           <div class="settings-section-title">History</div>
@@ -1324,7 +1977,7 @@ html, body {
           <div class="settings-section-title">About</div>
           <div class="about-card">
             <div class="about-version">AgriConvert Pro</div>
-            <div class="about-sub">v1.2.0 · Built for Malaysian durian farming</div>
+            <div class="about-sub">v1.3.1 · Built for Malaysian durian farming</div>
             <div class="about-tags">
               <span class="about-tag badge-metric">Offline Ready</span>
               <span class="about-tag badge-imperial">PWA</span>
@@ -1338,6 +1991,111 @@ html, body {
 
   </div><!-- /content -->
 </div><!-- /app -->
+
+<!-- ═══ UPGRADE MODAL ═══ -->
+<div class="modal-backdrop" id="upgrade-modal" style="display:none" onclick="closeUpgradeModal(event)">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div style="font-size:32px;text-align:center;margin-bottom:8px">🌟</div>
+    <div class="modal-title">AgriConvert GPS</div>
+    <div class="modal-price">
+      <span class="modal-price-big">RM 9.90</span>
+      <span class="modal-price-period">one-time</span>
+    </div>
+
+    <div class="feature-list">
+      <div class="feature-item"><span class="feature-check">✅</span> 📌 Location Stamp — save GPS coordinates with notes</div>
+      <div class="feature-item"><span class="feature-check">✅</span> 🌳 Tree Logger — map individual trees, export CSV</div>
+      <div class="feature-item"><span class="feature-check">✅</span> 📐 Boundary Mapper — walk perimeter → auto area calculation</div>
+      <div class="feature-item"><span class="feature-check">✅</span> 📏 Distance Measurer — point A to B with compass bearing</div>
+      <div class="feature-item"><span class="feature-check">✅</span> 🗺️ OpenStreetMap integration when online</div>
+      <div class="feature-item"><span class="feature-check">✅</span> 📋 CSV export → paste into Notion / Farm OS</div>
+      <div class="feature-item"><span class="feature-check">✅</span> Works fully offline after activation</div>
+    </div>
+
+    <!-- PAYMENT SECTION -->
+    <!-- ════════════════════════════════════════════════════
+         ⚠️  PLACEHOLDER — Fill in your payment details below
+         ════════════════════════════════════════════════════ -->
+    <div class="pay-section">
+      <div class="pay-title">Payment — DuitNow / Bank Transfer</div>
+      <div class="pay-row">
+        <span class="pay-key">Amount</span>
+        <span class="pay-val">RM 9.90</span>
+      </div>
+      <div class="pay-row">
+        <span class="pay-key">Bank</span>
+        <span class="pay-val">⚠️ YOUR_BANK_NAME</span>
+      </div>
+      <div class="pay-row">
+        <span class="pay-key">Account No.</span>
+        <span class="pay-val">⚠️ YOUR_ACCOUNT_NO</span>
+      </div>
+      <div class="pay-row">
+        <span class="pay-key">Name</span>
+        <span class="pay-val">⚠️ YOUR_NAME</span>
+      </div>
+      <div class="pay-row">
+        <span class="pay-key">Reference</span>
+        <span class="pay-val">AGRI + your email</span>
+      </div>
+    </div>
+
+    <p style="font-size:12px;color:var(--text3);margin-bottom:12px;text-align:center;line-height:1.5">
+      After payment, send your email + payment screenshot via<br>WhatsApp or Google Form to receive your token.
+    </p>
+
+    <div class="contact-btns">
+      <!-- ⚠️ PLACEHOLDER — Replace 601XXXXXXXXX with your WhatsApp number (no spaces, no +) -->
+      <a class="btn-whatsapp" href="https://wa.me/601XXXXXXXXX?text=Hi%2C%20I%20paid%20for%20AgriConvert%20GPS.%20My%20email%3A%20" target="_blank">
+        💬 WhatsApp
+      </a>
+      <!-- ⚠️ PLACEHOLDER — Replace YOUR_GOOGLE_FORM_URL with your actual Google Form link -->
+      <a class="btn-form" href="https://forms.gle/YOUR_GOOGLE_FORM_URL" target="_blank">
+        📋 Google Form
+      </a>
+    </div>
+
+    <button class="gps-btn gps-btn-secondary" style="margin-bottom:8px" onclick="showTokenModal()">
+      🔑 I Already Have a Token
+    </button>
+    <button class="modal-close" onclick="closeUpgradeModal()">Maybe Later</button>
+  </div>
+</div>
+
+<!-- ═══ TOKEN MODAL ═══ -->
+<div class="modal-backdrop" id="token-modal" style="display:none" onclick="closeTokenModal(event)">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div style="font-size:28px;text-align:center;margin-bottom:8px">🔑</div>
+    <div class="modal-title" style="background:linear-gradient(135deg,#fff 60%,var(--purple));-webkit-background-clip:text;background-clip:text">Enter Licence Token</div>
+    <p style="font-size:13px;color:var(--text3);text-align:center;margin-bottom:20px;line-height:1.5">
+      Enter the token you received by email after payment.
+    </p>
+
+    <div class="field-group">
+      <label class="field-label">Your Email</label>
+      <input type="email" id="token-email" placeholder="yourname@gmail.com"
+        style="width:100%;height:44px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:14px;padding:0 12px;outline:none;font-family:var(--sans);margin-bottom:12px;">
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Licence Token</label>
+      <div class="token-input-wrap">
+        <input type="text" class="token-input" id="token-input"
+          placeholder="AGRI-2026-XXXXXX-XX"
+          maxlength="20"
+          oninput="tokenInputFormat(this)">
+      </div>
+      <div class="token-feedback" id="token-feedback"></div>
+    </div>
+
+    <button class="gps-btn gps-btn-primary" style="background:linear-gradient(135deg,var(--purple),#7c3aed)" onclick="activateToken()">
+      Activate GPS Access
+    </button>
+    <button class="modal-close" onclick="closeTokenModal()">Cancel</button>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -1922,8 +2680,770 @@ function calcPressure() {
 }
 
 // ═══════════════════════════════════════════════
-// UTILITIES
+// PREMIUM / LICENCE SYSTEM
 // ═══════════════════════════════════════════════
+
+// ── Token validation ──
+// Valid format: AGRI-YYYY-XXXXXX-XX  (20 chars total)
+// YYYY = year issued, must be >= 2026
+// This is a client-side format check only.
+// Real validation uses expiry date stored on activation.
+
+function tokenIsValidFormat(token) {
+  return /^AGRI-20\d{2}-[A-Z0-9]{6}-[A-Z0-9]{2}$/.test(token.toUpperCase().trim());
+}
+
+function loadLicence() {
+  try {
+    return JSON.parse(localStorage.getItem('agri_licence') || 'null');
+  } catch(e) { return null; }
+}
+
+function saveLicence(data) {
+  try { localStorage.setItem('agri_licence', JSON.stringify(data)); } catch(e) {}
+}
+
+function getLicenceStatus() {
+  const lic = loadLicence();
+  if (!lic) {
+    // Check if within free trial window (14 days from first app open)
+    const firstOpen = localStorage.getItem('agri_first_open');
+    if (!firstOpen) {
+      localStorage.setItem('agri_first_open', Date.now().toString());
+      return { state: 'trial', daysLeft: 14 };
+    }
+    const elapsed = (Date.now() - parseInt(firstOpen)) / (1000 * 60 * 60 * 24);
+    const daysLeft = Math.max(0, Math.ceil(14 - elapsed));
+    return daysLeft > 0
+      ? { state: 'trial', daysLeft }
+      : { state: 'expired_trial', daysLeft: 0 };
+  }
+  // Has licence — check expiry
+  const expiry = new Date(lic.expiry);
+  const today  = new Date();
+  const daysLeft = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+  if (daysLeft <= 0) return { state: 'expired', lic };
+  return { state: 'active', daysLeft, lic };
+}
+
+function isGPSUnlocked() {
+  const s = getLicenceStatus();
+  return s.state === 'trial' || s.state === 'active';
+}
+
+// ── Apply lock/unlock state to GPS tab ──
+function applyGPSLockState() {
+  const status = getLicenceStatus();
+  const unlocked = isGPSUnlocked();
+
+  // Banner visibility
+  document.getElementById('gps-lock-banner-wrap').style.display   = unlocked && status.state !== 'active' ? 'block' : (status.state === 'active' ? 'none' : 'block');
+  document.getElementById('gps-active-banner-wrap').style.display = status.state === 'active' ? 'block' : 'none';
+
+  // Trial countdown
+  if (status.state === 'trial') {
+    const tw = document.getElementById('trial-countdown-wrap');
+    tw.style.display = 'block';
+    document.getElementById('trial-pill').textContent = `⏳ Free trial: ${status.daysLeft} day${status.daysLeft !== 1 ? 's' : ''} remaining`;
+    // Update action buttons for trial state
+    document.getElementById('gps-lock-action-btns').innerHTML = `
+      <button class="btn-trial" onclick="showUpgradeModal()">🌟 Unlock GPS — RM 9.90</button>
+      <button class="btn-token" onclick="showTokenModal()">🔑 Enter Token</button>
+    `;
+  } else if (status.state === 'expired_trial') {
+    document.getElementById('trial-countdown-wrap').style.display = 'none';
+    document.getElementById('gps-lock-action-btns').innerHTML = `
+      <button class="btn-trial" onclick="showUpgradeModal()">🌟 Unlock GPS — RM 9.90</button>
+      <button class="btn-token" onclick="showTokenModal()">🔑 Enter Token</button>
+    `;
+  }
+
+  if (status.state === 'active') {
+    const pill = document.getElementById('gps-active-pill');
+    pill.textContent = `✅ GPS Premium — Lifetime Access`;
+  }
+
+  // Show/hide dimmed overlays for each tool
+  const tools = ['stamp', 'tree', 'boundary', 'distance'];
+  tools.forEach(t => {
+    const lockEl   = document.getElementById(t + '-lock-wrap');
+    const unlockEl = document.getElementById(t + '-unlock-wrap');
+    if (lockEl && unlockEl) {
+      lockEl.style.display   = unlocked ? 'none'  : 'block';
+      unlockEl.style.display = unlocked ? 'block' : 'none';
+    }
+  });
+
+  // Render settings premium card
+  renderPremiumSettings(status);
+}
+
+function renderPremiumSettings(status) {
+  const card = document.getElementById('premium-settings-card');
+  if (!card) return;
+
+  if (status.state === 'active') {
+    card.innerHTML = `
+      <div class="premium-status-row">
+        <div class="premium-status-icon">✅</div>
+        <div class="premium-status-info">
+          <div class="premium-status-title">GPS Premium — Unlocked</div>
+          <div class="premium-status-sub">${status.lic.email} · One-time purchase · Lifetime access</div>
+        </div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-info">
+          <div class="settings-row-title">Enter New Token</div>
+          <div class="settings-row-sub">Apply a replacement token if needed</div>
+        </div>
+        <button class="settings-action" onclick="showTokenModal()">Token</button>
+      </div>
+    `;
+  } else if (status.state === 'expired') {
+    card.innerHTML = `
+      <div class="premium-status-row">
+        <div class="premium-status-icon">⚠️</div>
+        <div class="premium-status-info">
+          <div class="premium-status-title">Token Invalid or Expired</div>
+          <div class="premium-status-sub">${status.lic.email} · Please contact support</div>
+        </div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-info">
+          <div class="settings-row-title">Re-enter Token</div>
+          <div class="settings-row-sub">Contact kplee85@gmail.com for assistance</div>
+        </div>
+        <button class="settings-action" onclick="showTokenModal()">Enter</button>
+      </div>
+    `;
+  } else if (status.state === 'trial') {
+    card.innerHTML = `
+      <div class="premium-status-row">
+        <div class="premium-status-icon">⏳</div>
+        <div class="premium-status-info">
+          <div class="premium-status-title">Free Trial — ${status.daysLeft} days left</div>
+          <div class="premium-status-sub">All GPS tools active during trial</div>
+        </div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-info">
+          <div class="settings-row-title">Unlock GPS — RM 9.90</div>
+          <div class="settings-row-sub">One-time payment · Lifetime access</div>
+        </div>
+        <button class="settings-action" onclick="showUpgradeModal()">Unlock</button>
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-info">
+          <div class="settings-row-title">Have a token?</div>
+          <div class="settings-row-sub">Enter it to activate your access</div>
+        </div>
+        <button class="settings-action" onclick="showTokenModal()">Enter</button>
+      </div>
+    `;
+  } else {
+    card.innerHTML = `
+      <div class="premium-status-row">
+        <div class="premium-status-icon">🔒</div>
+        <div class="premium-status-info">
+          <div class="premium-status-title">GPS Tools — Locked</div>
+          <div class="premium-status-sub">Free trial ended · One-time unlock available</div>
+        </div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-info">
+          <div class="settings-row-title">Unlock GPS — RM 9.90</div>
+          <div class="settings-row-sub">One-time payment · Lifetime access</div>
+        </div>
+        <button class="settings-action" onclick="showUpgradeModal()">Unlock</button>
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-info">
+          <div class="settings-row-title">Have a token?</div>
+        </div>
+        <button class="settings-action" onclick="showTokenModal()">Enter</button>
+      </div>
+    `;
+  }
+}
+
+// ── Modals ──
+function showUpgradeModal() {
+  document.getElementById('upgrade-modal').style.display = 'flex';
+}
+function closeUpgradeModal(e) {
+  if (!e || e.target === document.getElementById('upgrade-modal'))
+    document.getElementById('upgrade-modal').style.display = 'none';
+}
+
+function showTokenModal() {
+  document.getElementById('upgrade-modal').style.display = 'none';
+  document.getElementById('token-modal').style.display = 'flex';
+  document.getElementById('token-input').value = '';
+  document.getElementById('token-email').value = '';
+  document.getElementById('token-feedback').textContent = '';
+  document.getElementById('token-input').className = 'token-input';
+}
+function closeTokenModal(e) {
+  if (!e || e.target === document.getElementById('token-modal'))
+    document.getElementById('token-modal').style.display = 'none';
+}
+
+// ── Token input formatter ──
+function tokenInputFormat(el) {
+  let v = el.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+  el.value = v;
+  const fb = document.getElementById('token-feedback');
+  if (v.length === 0) { fb.textContent = ''; el.className = 'token-input'; return; }
+  if (tokenIsValidFormat(v)) {
+    fb.textContent = '✅ Token format valid — tap Activate';
+    fb.style.color = 'var(--green)';
+    el.className = 'token-input valid';
+  } else if (v.length >= 15) {
+    fb.textContent = '❌ Invalid format. Expected: AGRI-2026-XXXXXX-XX';
+    fb.style.color = 'var(--red)';
+    el.className = 'token-input invalid';
+  } else {
+    fb.textContent = '';
+    el.className = 'token-input';
+  }
+}
+
+// ── Token activation ──
+function activateToken() {
+  const token = document.getElementById('token-input').value.trim().toUpperCase();
+  const email = document.getElementById('token-email').value.trim();
+  const fb    = document.getElementById('token-feedback');
+
+  if (!email) { fb.textContent = '⚠️ Please enter your email'; fb.style.color = 'var(--amber)'; return; }
+  if (!tokenIsValidFormat(token)) { fb.textContent = '❌ Invalid token format'; fb.style.color = 'var(--red)'; return; }
+
+  // One-time lifetime purchase — no expiry
+  const licData = { token, email, expiry: '9999-12-31', plan: 'lifetime', activated: new Date().toISOString().split('T')[0] };
+  saveLicence(licData);
+
+  fb.textContent = '✅ Activated! GPS tools unlocked.';
+  fb.style.color = 'var(--green)';
+  document.getElementById('token-input').className = 'token-input valid';
+
+  setTimeout(() => {
+    closeTokenModal();
+    applyGPSLockState();
+    showToast('GPS Premium activated! 🎉');
+  }, 1200);
+}
+
+
+let leafletLoaded = false;
+let gpsState = {
+  activeGPS: 'stamp',
+  stampCurrent: null,
+  stamps: [],
+  trees: [],
+  treeSession: 'Orchard A — Session 1',
+  treeCounter: 1,
+  boundaryPts: [],
+  distA: null,
+  distB: null,
+};
+let maps = { stamp: null, dist: null, bound: null };
+let markers = { stamp: null, distA: null, distB: null, bound: [] };
+
+function loadLeaflet(cb) {
+  if (leafletLoaded) { cb(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+  s.crossOrigin = '';
+  s.onload = () => { leafletLoaded = true; cb(); };
+  document.head.appendChild(s);
+}
+
+function saveGPS() {
+  try {
+    localStorage.setItem('agri_gps', JSON.stringify({
+      stamps: gpsState.stamps,
+      trees: gpsState.trees,
+      treeSession: gpsState.treeSession,
+      treeCounter: gpsState.treeCounter,
+      boundaryPts: gpsState.boundaryPts,
+    }));
+  } catch(e) {}
+}
+
+function loadGPS() {
+  try {
+    const d = JSON.parse(localStorage.getItem('agri_gps') || '{}');
+    if (d.stamps)      gpsState.stamps      = d.stamps;
+    if (d.trees)       gpsState.trees       = d.trees;
+    if (d.treeSession) gpsState.treeSession = d.treeSession;
+    if (d.treeCounter) gpsState.treeCounter = d.treeCounter;
+    if (d.boundaryPts) gpsState.boundaryPts = d.boundaryPts;
+  } catch(e) {}
+}
+
+function switchGPS(tab) {
+  gpsState.activeGPS = tab;
+  document.querySelectorAll('.gps-tab').forEach(t => t.classList.toggle('active', t.dataset.gps === tab));
+  document.querySelectorAll('.gps-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + tab));
+  if (tab === 'stamp')    renderStamps();
+  if (tab === 'tree')     renderTrees();
+  if (tab === 'boundary') renderBoundaryPoints();
+}
+
+// ── GPS HELPER ──
+function getPosition(onSuccess, onError) {
+  if (!navigator.geolocation) { onError('GPS not supported on this device.'); return; }
+  navigator.geolocation.getCurrentPosition(
+    pos => onSuccess(pos.coords),
+    err => {
+      const msgs = { 1:'Location permission denied. Please allow in browser settings.', 2:'GPS signal unavailable. Move to open area.', 3:'GPS timed out. Try again.' };
+      onError(msgs[err.code] || 'Unknown GPS error.');
+    },
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 }
+  );
+}
+
+function setStatusPill(elId, type, msg) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.innerHTML = `<div class="gps-status-pill ${type}">${msg}</div>`;
+}
+
+function fmtCoord(val) { return val.toFixed(6) + '°'; }
+function fmtAcc(m) { return '±' + Math.round(m) + ' m'; }
+
+// ── INIT MAP ──
+function initMap(containerId, lat, lng, wrapId) {
+  const wrap = document.getElementById(wrapId);
+  wrap.style.display = 'block';
+  const key = containerId.replace('gps-','').replace('-map','');
+  const mapKey = containerId === 'gps-map' ? 'stamp' : (containerId === 'dist-map' ? 'dist' : 'bound');
+  if (maps[mapKey]) { maps[mapKey].remove(); maps[mapKey] = null; }
+  setTimeout(() => {
+    maps[mapKey] = L.map(containerId, { zoomControl: true, attributionControl: false }).setView([lat, lng], 17);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(maps[mapKey]);
+  }, 100);
+  return mapKey;
+}
+
+function greenIcon() {
+  return L.divIcon({ className: '', html: '<div style="width:14px;height:14px;background:#22c55e;border:2px solid white;border-radius:50%;box-shadow:0 0 6px rgba(34,197,94,0.6)"></div>', iconSize:[14,14], iconAnchor:[7,7] });
+}
+function purpleIcon() {
+  return L.divIcon({ className: '', html: '<div style="width:12px;height:12px;background:#a855f7;border:2px solid white;border-radius:50%"></div>', iconSize:[12,12], iconAnchor:[6,6] });
+}
+
+// ────────────────────────────────
+// 1. LOCATION STAMP
+// ────────────────────────────────
+function stampGetLocation() {
+  const btn = document.getElementById('stamp-get-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Acquiring GPS...';
+  setStatusPill('stamp-status', 'acquiring', '📡 Getting location...');
+  document.getElementById('stamp-coord-box').style.display = 'none';
+  document.getElementById('stamp-save-section').style.display = 'none';
+
+  getPosition(coords => {
+    gpsState.stampCurrent = coords;
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> Refresh Location';
+    setStatusPill('stamp-status', 'got', `✅ Got location ${fmtAcc(coords.accuracy)}`);
+
+    document.getElementById('stamp-lat').textContent = fmtCoord(coords.latitude)  + ' ' + (coords.latitude  >= 0 ? 'N' : 'S');
+    document.getElementById('stamp-lng').textContent = fmtCoord(coords.longitude) + ' ' + (coords.longitude >= 0 ? 'E' : 'W');
+    document.getElementById('stamp-acc').textContent = fmtAcc(coords.accuracy);
+    document.getElementById('stamp-coord-box').style.display = 'block';
+    document.getElementById('stamp-save-section').style.display = 'block';
+
+    if (navigator.onLine) {
+      loadLeaflet(() => {
+        const mk = initMap('gps-map', coords.latitude, coords.longitude, 'gps-map-wrap');
+        setTimeout(() => {
+          if (markers.stamp) markers.stamp.remove();
+          markers.stamp = L.marker([coords.latitude, coords.longitude], { icon: greenIcon() }).addTo(maps[mk]);
+        }, 300);
+      });
+    }
+  }, err => {
+    btn.disabled = false;
+    btn.innerHTML = '📍 Tap to Get Location';
+    setStatusPill('stamp-status', 'error', '❌ ' + err);
+  });
+}
+
+function stampCopyCoords() {
+  if (!gpsState.stampCurrent) return;
+  const c = gpsState.stampCurrent;
+  const text = `${c.latitude.toFixed(6)}, ${c.longitude.toFixed(6)}`;
+  navigator.clipboard.writeText(text).catch(() => {});
+  showToast('Coordinates copied!');
+}
+
+function stampSave() {
+  if (!gpsState.stampCurrent) return;
+  const c = gpsState.stampCurrent;
+  const note = document.getElementById('stamp-note').value.trim() || 'Location ' + (gpsState.stamps.length + 1);
+  gpsState.stamps.unshift({ label: note, lat: c.latitude, lng: c.longitude, acc: Math.round(c.accuracy), time: Date.now() });
+  if (gpsState.stamps.length > 50) gpsState.stamps.pop();
+  saveGPS(); renderStamps();
+  document.getElementById('stamp-note').value = '';
+  showToast('Stamp saved: ' + note);
+}
+
+function renderStamps() {
+  const el = document.getElementById('stamp-list');
+  if (!gpsState.stamps.length) {
+    el.innerHTML = '<div class="empty-history">No stamps yet.</div>'; return;
+  }
+  el.innerHTML = gpsState.stamps.map((s, i) => `
+    <div class="stamp-item">
+      <div class="stamp-dot"></div>
+      <div class="stamp-info">
+        <div class="stamp-label">${s.label}</div>
+        <div class="stamp-coords">${s.lat.toFixed(6)}°, ${s.lng.toFixed(6)}°</div>
+        <div class="stamp-meta">±${s.acc}m · ${timeAgo(s.time)}</div>
+      </div>
+      <div class="stamp-actions">
+        <button class="stamp-copy-btn" onclick="stampCopyItem(${i})">📋</button>
+        <button class="stamp-copy-btn" onclick="stampOpenMaps(${i})">🗺️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function stampCopyItem(i) {
+  const s = gpsState.stamps[i];
+  const text = `${s.label}: ${s.lat.toFixed(6)}, ${s.lng.toFixed(6)}`;
+  navigator.clipboard.writeText(text).catch(() => {});
+  showToast('Copied: ' + s.label);
+}
+
+function stampOpenMaps(i) {
+  const s = gpsState.stamps[i];
+  window.open(`https://www.google.com/maps?q=${s.lat},${s.lng}`, '_blank');
+}
+
+function clearStamps() {
+  if (!confirm('Clear all saved stamps?')) return;
+  gpsState.stamps = []; saveGPS(); renderStamps();
+  showToast('All stamps cleared');
+}
+
+// ────────────────────────────────
+// 2. TREE LOGGER
+// ────────────────────────────────
+function treeLogLocation() {
+  const btn = document.getElementById('tree-log-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Getting GPS...';
+  setStatusPill('tree-status', 'acquiring', '📡 Getting location...');
+
+  getPosition(coords => {
+    const custom = document.getElementById('tree-custom-label').value.trim();
+    const id = 'T-' + String(gpsState.treeCounter).padStart(3, '0');
+    const label = custom || id;
+    gpsState.trees.push({ id, label, lat: coords.latitude, lng: coords.longitude, acc: Math.round(coords.accuracy), time: Date.now() });
+    gpsState.treeCounter++;
+    document.getElementById('tree-custom-label').value = '';
+    saveGPS(); renderTrees();
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> Log This Tree';
+    setStatusPill('tree-status', 'got', `✅ ${label} logged`);
+    showToast(label + ' logged');
+  }, err => {
+    btn.disabled = false;
+    btn.innerHTML = '📍 Log This Tree';
+    setStatusPill('tree-status', 'error', '❌ ' + err);
+  });
+}
+
+function renderTrees() {
+  document.getElementById('tree-session-name').value = gpsState.treeSession;
+  document.getElementById('tree-count-badge').textContent = gpsState.trees.length + ' trees';
+  const el = document.getElementById('tree-list');
+  if (!gpsState.trees.length) {
+    el.innerHTML = '<div class="empty-history">No trees logged yet.</div>'; return;
+  }
+  el.innerHTML = [...gpsState.trees].reverse().map(t => `
+    <div class="tree-item">
+      <div class="tree-id">${t.id}</div>
+      <div class="tree-info">
+        <div class="tree-label-text">${t.label}</div>
+        <div class="tree-coords-text">${t.lat.toFixed(6)}°, ${t.lng.toFixed(6)}° · ±${t.acc}m · ${timeAgo(t.time)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function treeExportCSV() {
+  if (!gpsState.trees.length) { showToast('No trees to export'); return; }
+  const header = 'ID,Label,Latitude,Longitude,Accuracy_m,Timestamp';
+  const rows = gpsState.trees.map(t =>
+    `${t.id},"${t.label}",${t.lat.toFixed(6)},${t.lng.toFixed(6)},${t.acc},${new Date(t.time).toISOString()}`
+  );
+  const csv = [header, ...rows].join('\n');
+  navigator.clipboard.writeText(csv).catch(() => {});
+  showToast('CSV copied — paste into Notion / Excel');
+}
+
+function treeNewSession() {
+  const name = prompt('New session name:', 'Orchard B — Session 1');
+  if (!name) return;
+  gpsState.treeSession = name;
+  gpsState.trees = [];
+  gpsState.treeCounter = 1;
+  saveGPS(); renderTrees();
+}
+
+function treeClearSession() {
+  if (!confirm('Clear all trees in this session?')) return;
+  gpsState.trees = [];
+  gpsState.treeCounter = 1;
+  saveGPS(); renderTrees();
+  showToast('Session cleared');
+}
+
+// ────────────────────────────────
+// 3. PLOT BOUNDARY MAPPER
+// ────────────────────────────────
+function boundaryAddPoint() {
+  const btn = document.getElementById('boundary-add-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Getting GPS...';
+  setStatusPill('boundary-status', 'acquiring', '📡 Getting location...');
+
+  getPosition(coords => {
+    gpsState.boundaryPts.push({ lat: coords.latitude, lng: coords.longitude, acc: Math.round(coords.accuracy) });
+    saveGPS(); renderBoundaryPoints(); updateBoundaryMap();
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> + Add Corner Point';
+    setStatusPill('boundary-status', 'got', `✅ Point P${gpsState.boundaryPts.length} added`);
+  }, err => {
+    btn.disabled = false;
+    btn.innerHTML = '+ Add Corner Point';
+    setStatusPill('boundary-status', 'error', '❌ ' + err);
+  });
+}
+
+function renderBoundaryPoints() {
+  const pts = gpsState.boundaryPts;
+  document.getElementById('boundary-pt-count').textContent = pts.length + ' points';
+  const el = document.getElementById('boundary-points-list');
+  if (!pts.length) { el.innerHTML = '<div class="empty-history">No points yet.</div>'; }
+  else {
+    el.innerHTML = pts.map((p, i) => `
+      <div class="boundary-point">
+        <div class="boundary-num">P${i+1}</div>
+        <div class="boundary-coords">${p.lat.toFixed(6)}°N, ${p.lng.toFixed(6)}°E · ±${p.acc}m</div>
+      </div>
+    `).join('');
+  }
+  const calcBtn = document.getElementById('boundary-calc-btn');
+  calcBtn.style.display = pts.length >= 3 ? 'flex' : 'none';
+}
+
+function updateBoundaryMap() {
+  if (!navigator.onLine || gpsState.boundaryPts.length < 1) return;
+  loadLeaflet(() => {
+    const pts = gpsState.boundaryPts;
+    const lat = pts[pts.length-1].lat, lng = pts[pts.length-1].lng;
+    if (!maps.bound) {
+      document.getElementById('bound-map-wrap').style.display = 'block';
+      setTimeout(() => {
+        maps.bound = L.map('bound-map', { zoomControl: true, attributionControl: false }).setView([lat, lng], 17);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(maps.bound);
+        drawBoundaryOnMap();
+      }, 100);
+    } else { drawBoundaryOnMap(); }
+  });
+}
+
+function drawBoundaryOnMap() {
+  if (!maps.bound) return;
+  markers.bound.forEach(m => m.remove());
+  markers.bound = [];
+  const pts = gpsState.boundaryPts;
+  pts.forEach((p, i) => {
+    const m = L.marker([p.lat, p.lng], { icon: purpleIcon() }).addTo(maps.bound);
+    markers.bound.push(m);
+  });
+  if (pts.length >= 2) {
+    const latlngs = [...pts.map(p => [p.lat, p.lng]), [pts[0].lat, pts[0].lng]];
+    if (maps.bound._boundaryLine) maps.bound._boundaryLine.remove();
+    maps.bound._boundaryLine = L.polyline(latlngs, { color: '#a855f7', weight: 2, dashArray: '6,4' }).addTo(maps.bound);
+    maps.bound.fitBounds(latlngs);
+  }
+}
+
+// Shoelace formula for polygon area from lat/lng
+function shoelaceAreaM2(pts) {
+  const R = 6371000; // Earth radius metres
+  const toRad = d => d * Math.PI / 180;
+  let area = 0;
+  const n = pts.length;
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    const xi = toRad(pts[i].lng) * Math.cos(toRad((pts[i].lat + pts[j].lat) / 2));
+    const xj = toRad(pts[j].lng) * Math.cos(toRad((pts[i].lat + pts[j].lat) / 2));
+    area += xi * toRad(pts[j].lat) - xj * toRad(pts[i].lat);
+  }
+  return Math.abs(area / 2) * R * R;
+}
+
+// Haversine distance metres
+function haversineM(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function boundaryCalculate() {
+  const pts = gpsState.boundaryPts;
+  if (pts.length < 3) { showToast('Need at least 3 corner points'); return; }
+  const m2 = shoelaceAreaM2(pts);
+  const acres   = m2 / 4046.856;
+  const ha      = m2 / 10000;
+  const relong  = m2 / 5327.605;
+  let perim = 0;
+  for (let i = 0; i < pts.length; i++) {
+    const j = (i + 1) % pts.length;
+    perim += haversineM(pts[i].lat, pts[i].lng, pts[j].lat, pts[j].lng);
+  }
+  document.getElementById('bound-acres').textContent  = fmtCalc(acres)  + ' ac';
+  document.getElementById('bound-ha').textContent     = fmtCalc(ha)     + ' ha';
+  document.getElementById('bound-relong').textContent = fmtCalc(relong) + ' relong';
+  document.getElementById('bound-m2').textContent     = Math.round(m2).toLocaleString() + ' m²';
+  document.getElementById('bound-perim').textContent  = fmtCalc(perim)  + ' m';
+  document.getElementById('bound-pts').textContent    = pts.length + ' corners';
+  document.getElementById('boundary-result-card').style.display = 'block';
+}
+
+function boundaryCopyResult() {
+  const ac = document.getElementById('bound-acres').textContent;
+  const ha = document.getElementById('bound-ha').textContent;
+  const text = `Plot area: ${ac} / ${ha} (${gpsState.boundaryPts.length} corner GPS points)`;
+  navigator.clipboard.writeText(text).catch(() => {});
+  showToast('Result copied');
+}
+
+function boundaryUndo() {
+  if (!gpsState.boundaryPts.length) return;
+  gpsState.boundaryPts.pop();
+  saveGPS(); renderBoundaryPoints();
+  if (maps.bound) drawBoundaryOnMap();
+  document.getElementById('boundary-result-card').style.display = 'none';
+}
+
+function boundaryClear() {
+  if (!confirm('Clear all boundary points?')) return;
+  gpsState.boundaryPts = [];
+  saveGPS(); renderBoundaryPoints();
+  if (maps.bound) { maps.bound.remove(); maps.bound = null; }
+  document.getElementById('bound-map-wrap').style.display = 'none';
+  document.getElementById('boundary-result-card').style.display = 'none';
+  showToast('Boundary cleared');
+}
+
+// ────────────────────────────────
+// 4. DISTANCE MEASURER
+// ────────────────────────────────
+function distSetPoint(which) {
+  const btn = document.getElementById('dist-' + which.toLowerCase() + '-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Getting GPS...';
+
+  getPosition(coords => {
+    if (which === 'A') {
+      gpsState.distA = coords;
+      document.getElementById('dist-a-coords').textContent = `${coords.latitude.toFixed(6)}°N, ${coords.longitude.toFixed(6)}°E`;
+      document.getElementById('dist-a-acc').textContent = fmtAcc(coords.accuracy);
+      document.getElementById('dist-a-box').style.display = 'block';
+    } else {
+      gpsState.distB = coords;
+      document.getElementById('dist-b-coords').textContent = `${coords.latitude.toFixed(6)}°N, ${coords.longitude.toFixed(6)}°E`;
+      document.getElementById('dist-b-acc').textContent = fmtAcc(coords.accuracy);
+      document.getElementById('dist-b-box').style.display = 'block';
+    }
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> ✅ Point ${which} Set — Tap to Re-set`;
+    if (gpsState.distA && gpsState.distB) distCalculate();
+  }, err => {
+    btn.disabled = false;
+    btn.innerHTML = `📍 Set Point ${which}`;
+    showToast('GPS error: ' + err);
+  });
+}
+
+function distCalculate() {
+  const a = gpsState.distA, b = gpsState.distB;
+  const distM = haversineM(a.latitude, a.longitude, b.latitude, b.longitude);
+
+  // Bearing
+  const dLng = (b.longitude - a.longitude) * Math.PI / 180;
+  const lat1  = a.latitude * Math.PI / 180;
+  const lat2  = b.latitude * Math.PI / 180;
+  const y = Math.sin(dLng) * Math.cos(lat2);
+  const x = Math.cos(lat1)*Math.sin(lat2) - Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLng);
+  const bearing = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+  const dirs = ['N','NE','E','SE','S','SW','W','NW'];
+  const dir = dirs[Math.round(bearing / 45) % 8];
+
+  document.getElementById('dist-val-m').textContent    = fmtCalc(distM);
+  document.getElementById('dist-bearing-text').textContent = `Bearing: ${Math.round(bearing)}° ${dir}`;
+  document.getElementById('dist-ft').textContent       = fmtCalc(distM / 0.3048) + ' ft';
+  document.getElementById('dist-chain').textContent    = fmtCalc(distM / 20.1168) + ' ch';
+  document.getElementById('dist-km').textContent       = fmtCalc(distM / 1000) + ' km';
+  document.getElementById('dist-result-card').style.display = 'block';
+
+  if (navigator.onLine) {
+    loadLeaflet(() => {
+      const midLat = (a.latitude + b.latitude) / 2;
+      const midLng = (a.longitude + b.longitude) / 2;
+      if (!maps.dist) {
+        document.getElementById('dist-map-wrap').style.display = 'block';
+        setTimeout(() => {
+          maps.dist = L.map('dist-map', { zoomControl: true, attributionControl: false }).setView([midLat, midLng], 17);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(maps.dist);
+          drawDistMap(a, b);
+        }, 100);
+      } else { drawDistMap(a, b); }
+    });
+  }
+}
+
+function drawDistMap(a, b) {
+  if (!maps.dist) return;
+  if (markers.distA) markers.distA.remove();
+  if (markers.distB) markers.distB.remove();
+  markers.distA = L.marker([a.latitude, a.longitude], { icon: greenIcon() }).bindPopup('A').addTo(maps.dist);
+  markers.distB = L.marker([b.latitude, b.longitude], { icon: greenIcon() }).bindPopup('B').addTo(maps.dist);
+  if (maps.dist._distLine) maps.dist._distLine.remove();
+  maps.dist._distLine = L.polyline([[a.latitude, a.longitude],[b.latitude, b.longitude]], { color: '#22c55e', weight: 3 }).addTo(maps.dist);
+  maps.dist.fitBounds([[a.latitude, a.longitude],[b.latitude, b.longitude]], { padding: [30,30] });
+}
+
+function distCopyResult() {
+  const m = document.getElementById('dist-val-m').textContent;
+  const ft = document.getElementById('dist-ft').textContent;
+  const bearing = document.getElementById('dist-bearing-text').textContent;
+  navigator.clipboard.writeText(`Distance: ${m} m / ${ft} — ${bearing}`).catch(() => {});
+  showToast('Distance result copied');
+}
+
+function distReset() {
+  gpsState.distA = null; gpsState.distB = null;
+  ['dist-a-box','dist-b-box','dist-result-card','dist-map-wrap'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  document.getElementById('dist-a-btn').innerHTML = '📍 Set Point A — Stand Here & Tap';
+  document.getElementById('dist-b-btn').innerHTML = '📍 Set Point B — Walk There & Tap';
+  if (maps.dist) { maps.dist.remove(); maps.dist = null; }
+  showToast('Reset');
+}
+
+
 function fmtCalc(val) {
   if (!isFinite(val) || val === 0) return '0';
   if (val >= 10000) return val.toLocaleString('en-MY', { maximumFractionDigits: 1 });
@@ -1972,6 +3492,11 @@ function init() {
   calcFert();
   calcDilution();
   calcPressure();
+  loadGPS();
+  renderStamps();
+  renderTrees();
+  renderBoundaryPoints();
+  applyGPSLockState();
   updateOnlineStatus();
 }
 
