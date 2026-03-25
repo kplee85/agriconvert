@@ -122,16 +122,6 @@
 
 ---
 
-## Token Generation (for owner)
-
-Use this formula in Google Sheets column to generate tokens:
-```
-="AGRI-"&YEAR(TODAY())&"-"&CHAR(RANDBETWEEN(65,90))&CHAR(RANDBETWEEN(65,90))&CHAR(RANDBETWEEN(65,90))&CHAR(RANDBETWEEN(65,90))&"-"&CHAR(RANDBETWEEN(65,90))&CHAR(RANDBETWEEN(65,90))
-```
-After generating: **Paste as Values** (Ctrl+Shift+V) to freeze the token before sending.
-
----
-
 ## File Structure
 
 ```
