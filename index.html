@@ -988,8 +988,111 @@ html, body {
   border-top-color: white; border-radius: 50%;
   animation: spin 0.8s linear infinite; display: inline-block;
 }
+/* ── ELEVATION MODULE ── */
+.elev-tabs {
+  display: flex; background: var(--bg3); border-radius: 10px;
+  padding: 3px; gap: 3px; margin-bottom: 14px;
+}
+.elev-tab {
+  flex: 1; padding: 8px 4px; border: none; border-radius: 7px;
+  font-size: 11px; font-weight: 600; font-family: var(--sans);
+  color: var(--text3); background: none; cursor: pointer;
+  transition: all 0.2s; text-align: center; line-height: 1.3;
+}
+.elev-tab.active {
+  background: var(--surface); color: var(--text);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.elev-panel { display: none; }
+.elev-panel.active { display: block; }
+
+/* Elevation value display */
+.elev-big {
+  text-align: center; padding: 18px 16px;
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 12px; margin-bottom: 12px;
+}
+.elev-value {
+  font-size: 48px; font-weight: 800; font-family: var(--mono);
+  color: var(--green); letter-spacing: -2px; line-height: 1;
+}
+.elev-unit { font-size: 20px; color: var(--text2); font-weight: 600; margin-left: 4px; }
+.elev-sub  { font-size: 12px; color: var(--text3); margin-top: 6px; font-family: var(--mono); }
+
+/* Accuracy warning */
+.acc-warning {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border-radius: 8px; margin-bottom: 10px;
+  font-size: 12px; font-weight: 600;
+}
+.acc-warning.good { background: var(--green-bg); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+.acc-warning.fair { background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(245,158,11,0.2); }
+.acc-warning.poor { background: rgba(239,68,68,0.08); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
+
+/* Slope result display */
+.slope-result-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px; margin-bottom: 12px;
+}
+.slope-card {
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 10px; padding: 12px 8px; text-align: center;
+}
+.slope-card-value {
+  font-size: 22px; font-weight: 800; font-family: var(--mono);
+  color: var(--green); letter-spacing: -0.5px;
+}
+.slope-card-unit { font-size: 11px; color: var(--text2); font-weight: 600; margin-top: 2px; }
+.slope-card-label { font-size: 10px; color: var(--text3); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Terrain rating pill */
+.terrain-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 20px;
+  font-size: 12px; font-weight: 700; margin-bottom: 10px;
+}
+
+/* Survey point item */
+.survey-item {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 14px; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 10px;
+}
+.survey-num {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: var(--green-bg); color: var(--green);
+  border: 1px solid rgba(34,197,94,0.2);
+  font-size: 12px; font-weight: 700; font-family: var(--mono);
+  display: flex; align-items: center; justify-content: center; flex: none;
+}
+.survey-info { flex: 1; min-width: 0; }
+.survey-label { font-size: 13px; font-weight: 600; color: var(--text); }
+.survey-detail { font-size: 11px; font-family: var(--mono); color: var(--text3); margin-top: 2px; }
+.survey-elev {
+  font-size: 16px; font-weight: 700; font-family: var(--mono);
+  color: var(--green); flex: none;
+}
+
+/* Point set button with status */
+.point-set-row {
+  display: flex; gap: 8px; align-items: stretch; margin-bottom: 10px;
+}
+.point-label-badge {
+  width: 36px; height: 44px; border-radius: 8px; flex: none;
+  background: var(--blue-bg); color: var(--blue);
+  border: 1px solid rgba(59,130,246,0.2);
+  font-size: 14px; font-weight: 800; font-family: var(--mono);
+  display: flex; align-items: center; justify-content: center;
+}
+.point-info-box {
+  flex: 1; background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 6px 12px; min-height: 44px;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.point-info-elev { font-size: 15px; font-weight: 700; font-family: var(--mono); color: var(--green); }
+.point-info-acc  { font-size: 10px; color: var(--text3); font-family: var(--mono); }
+.point-info-empty { font-size: 12px; color: var(--text3); }
 </style>
-</head>
 <body>
 
 <div id="app">
@@ -1039,7 +1142,7 @@ html, body {
         <div>
           <div class="brand-name">AgriConvert</div>
         </div>
-        <div class="brand-version">v1.3.1</div>
+        <div class="brand-version">v1.3.2</div>
       </div>
       <div class="offline-pill" id="offlinePill">📴 Offline</div>
     </div>
@@ -1690,7 +1793,7 @@ html, body {
             <div class="gps-lock-icon">🌟</div>
             <div>
               <div class="gps-lock-title">GPS Tools — Premium</div>
-              <div class="gps-lock-sub">RM 9.90 one-time · All 4 GPS tools · Works offline</div>
+              <div class="gps-lock-sub">RM 9.90 one-time · GPS + Elevation tools · Works offline</div>
             </div>
           </div>
           <div id="trial-countdown-wrap" style="display:none">
@@ -1709,10 +1812,11 @@ html, body {
       </div>
 
       <div class="gps-tabs">
-        <button class="gps-tab active" data-gps="stamp"    onclick="switchGPS('stamp')">📌 Stamp</button>
-        <button class="gps-tab"        data-gps="tree"     onclick="switchGPS('tree')">🌳 Trees</button>
-        <button class="gps-tab"        data-gps="boundary" onclick="switchGPS('boundary')">📐 Boundary</button>
-        <button class="gps-tab"        data-gps="distance" onclick="switchGPS('distance')">📏 Distance</button>
+        <button class="gps-tab active" data-gps="stamp"     onclick="switchGPS('stamp')">📌 Stamp</button>
+        <button class="gps-tab"        data-gps="tree"      onclick="switchGPS('tree')">🌳 Trees</button>
+        <button class="gps-tab"        data-gps="boundary"  onclick="switchGPS('boundary')">📐 Boundary</button>
+        <button class="gps-tab"        data-gps="distance"  onclick="switchGPS('distance')">📏 Distance</button>
+        <button class="gps-tab"        data-gps="elevation" onclick="switchGPS('elevation')">📊 Elevation</button>
       </div>
 
       <div class="gps-body">
@@ -1930,6 +2034,321 @@ html, body {
           </div>
         </div>
 
+        <!-- ── ELEVATION MODULE ── -->
+        <div class="gps-panel" id="panel-elevation">
+
+          <!-- Lock overlay -->
+          <div id="elevation-lock-wrap" class="gps-dimmed-wrap" style="display:none">
+            <div class="calc-card" style="pointer-events:none;opacity:0.5">
+              <div class="calc-card-title" style="color:var(--green)">📊 Elevation & Slope</div>
+              <div style="height:60px;background:var(--bg3);border-radius:8px;margin-bottom:10px"></div>
+              <div style="height:120px;background:var(--bg3);border-radius:8px"></div>
+            </div>
+            <div class="gps-dimmed-tap" onclick="showUpgradeModal()">
+              <div class="gps-dimmed-label">🔒 Premium Feature — Tap to Unlock</div>
+            </div>
+          </div>
+
+          <!-- Unlocked content -->
+          <div id="elevation-unlock-wrap">
+
+            <!-- Sub-tab navigation -->
+            <div class="elev-tabs">
+              <button class="elev-tab active" data-elev="stamp"    onclick="switchElev('stamp')">📍 Elev<br>Stamp</button>
+              <button class="elev-tab"        data-elev="slope"    onclick="switchElev('slope')">📐 Slope<br>A→B</button>
+              <button class="elev-tab"        data-elev="survey"   onclick="switchElev('survey')">🗺️ Terrain<br>Survey</button>
+              <button class="elev-tab"        data-elev="deviation" onclick="switchElev('deviation')">🎯 Target<br>Deviation</button>
+            </div>
+
+            <!-- ── ELEV STAMP ── -->
+            <div class="elev-panel active" id="elev-panel-stamp">
+              <div class="calc-card">
+                <div class="calc-card-title" style="color:var(--green)">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Read Elevation
+                </div>
+                <button class="gps-btn gps-btn-primary" id="es-read-btn" onclick="elevStampRead()">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Read My Elevation
+                </button>
+                <div id="es-status"></div>
+                <div id="es-result" style="display:none">
+                  <div class="elev-big">
+                    <div><span class="elev-value" id="es-val">—</span><span class="elev-unit">m</span></div>
+                    <div class="elev-sub" id="es-sub">Above sea level</div>
+                  </div>
+                  <div id="es-acc-warn"></div>
+                  <div class="field-group">
+                    <label class="field-label">Label (optional)</label>
+                    <input type="text" id="es-note" placeholder="e.g. Top ridge, Pump area, SE corner..."
+                      style="width:100%;height:44px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:14px;padding:0 12px;outline:none;font-family:var(--sans);">
+                  </div>
+                  <div style="display:flex;gap:8px">
+                    <button class="gps-btn gps-btn-secondary" style="flex:1;margin-bottom:0" onclick="elevStampCopy()">📋 Copy</button>
+                    <button class="gps-btn gps-btn-primary"   style="flex:1;margin-bottom:0" onclick="elevStampSave()">💾 Save</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="calc-card">
+                <div class="calc-card-title" style="color:var(--green)">
+                  Saved Elevations
+                  <span id="es-range-label" style="margin-left:auto;font-size:11px;color:var(--text3)"></span>
+                </div>
+                <div id="es-list"><div class="empty-history">No elevations saved yet.</div></div>
+                <button class="gps-btn gps-btn-danger" style="margin-top:10px;margin-bottom:0" onclick="elevStampClear()">🗑️ Clear All</button>
+              </div>
+            </div>
+
+            <!-- ── SLOPE A→B ── -->
+            <div class="elev-panel" id="elev-panel-slope">
+              <div class="calc-card">
+                <div class="calc-card-title" style="color:var(--blue)">Set Two Points</div>
+
+                <!-- Point A -->
+                <label class="field-label" style="margin-bottom:6px">Point A — stand here and tap</label>
+                <div class="point-set-row">
+                  <div class="point-label-badge">A</div>
+                  <div class="point-info-box" id="slope-a-info">
+                    <span class="point-info-empty">Not set yet</span>
+                  </div>
+                  <button class="gps-btn gps-btn-primary" id="slope-a-btn"
+                    style="width:auto;padding:0 14px;margin-bottom:0;flex:none"
+                    onclick="slopeSetPoint('A')">📍</button>
+                </div>
+
+                <!-- Point B -->
+                <label class="field-label" style="margin-bottom:6px">Point B — walk there and tap</label>
+                <div class="point-set-row">
+                  <div class="point-label-badge">B</div>
+                  <div class="point-info-box" id="slope-b-info">
+                    <span class="point-info-empty">Not set yet</span>
+                  </div>
+                  <button class="gps-btn gps-btn-primary" id="slope-b-btn"
+                    style="width:auto;padding:0 14px;margin-bottom:0;flex:none"
+                    onclick="slopeSetPoint('B')">📍</button>
+                </div>
+                <div id="slope-status"></div>
+              </div>
+
+              <div class="calc-card" id="slope-result-card" style="display:none">
+                <div class="calc-card-title" style="color:var(--green)">Slope Results</div>
+                <div id="slope-acc-warn"></div>
+
+                <!-- Big 3 outputs -->
+                <div class="slope-result-grid">
+                  <div class="slope-card">
+                    <div class="slope-card-value" id="slope-pct">—</div>
+                    <div class="slope-card-unit">%</div>
+                    <div class="slope-card-label">Gradient</div>
+                  </div>
+                  <div class="slope-card">
+                    <div class="slope-card-value" id="slope-ratio">—</div>
+                    <div class="slope-card-unit">1 : X</div>
+                    <div class="slope-card-label">Ratio</div>
+                  </div>
+                  <div class="slope-card">
+                    <div class="slope-card-value" id="slope-deg">—</div>
+                    <div class="slope-card-unit">°</div>
+                    <div class="slope-card-label">Degrees</div>
+                  </div>
+                </div>
+
+                <div class="result-box">
+                  <div class="result-row">
+                    <span class="result-row-label">Height difference</span>
+                    <span class="result-row-value" id="slope-hdiff">—</span>
+                  </div>
+                  <div class="result-row">
+                    <span class="result-row-label">Horizontal distance</span>
+                    <span class="result-row-value" id="slope-hdist">—</span>
+                  </div>
+                  <div class="result-row">
+                    <span class="result-row-label">Direction (flow)</span>
+                    <span class="result-row-value" id="slope-dir">—</span>
+                  </div>
+                  <div class="result-row">
+                    <span class="result-row-label">Water flows toward</span>
+                    <span class="result-row-value" id="slope-flow">—</span>
+                  </div>
+                  <div class="result-row">
+                    <span class="result-row-label">Measurement error est.</span>
+                    <span class="result-row-value" id="slope-err" style="color:var(--amber)">—</span>
+                  </div>
+                </div>
+                <button class="gps-btn gps-btn-secondary" style="margin-top:10px;margin-bottom:0" onclick="slopeCopy()">📋 Copy Result</button>
+              </div>
+
+              <button class="gps-btn gps-btn-danger" onclick="slopeReset()">↺ Reset</button>
+            </div>
+
+            <!-- ── TERRAIN SURVEY ── -->
+            <div class="elev-panel" id="elev-panel-survey">
+              <div class="calc-card">
+                <div class="calc-card-title" style="color:var(--purple)">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+                  Multi-Point Survey
+                </div>
+                <p style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.6">
+                  Walk to different points across your plot. Tap <strong style="color:var(--text)">Add Survey Point</strong> at each location (max 10).
+                </p>
+                <button class="gps-btn gps-btn-primary" id="survey-add-btn" onclick="surveyAddPoint()">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                  + Add Survey Point
+                </button>
+                <div id="survey-status"></div>
+                <div class="field-group" style="margin-top:8px">
+                  <label class="field-label">Point label (optional)</label>
+                  <input type="text" id="survey-label-input" placeholder="e.g. North ridge, Centre, South drain..."
+                    style="width:100%;height:44px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:14px;padding:0 12px;outline:none;font-family:var(--sans);">
+                </div>
+              </div>
+
+              <div class="calc-card">
+                <div class="calc-card-title" style="color:var(--purple)">
+                  Survey Points
+                  <span id="survey-count-label" style="margin-left:auto;font-size:11px;color:var(--text3)">0 / 10</span>
+                </div>
+                <div id="survey-list"><div class="empty-history">No points yet.</div></div>
+                <div style="display:flex;gap:8px;margin-top:10px">
+                  <button class="gps-btn gps-btn-secondary" style="flex:1;margin-bottom:0" onclick="surveyUndo()">↩ Remove Last</button>
+                  <button class="gps-btn gps-btn-danger"    style="flex:1;margin-bottom:0" onclick="surveyClear()">🗑️ Clear</button>
+                </div>
+              </div>
+
+              <div class="calc-card" id="survey-result-card" style="display:none">
+                <div class="calc-card-title" style="color:var(--green)">Terrain Profile</div>
+                <div id="survey-terrain-pill"></div>
+                <div class="result-box">
+                  <div class="result-row">
+                    <span class="result-row-label">Highest point</span>
+                    <span class="result-row-value" id="sv-high">—</span>
+                  </div>
+                  <div class="result-row">
+                    <span class="result-row-label">Lowest point</span>
+                    <span class="result-row-value" id="sv-low">—</span>
+                  </div>
+                  <div class="result-row">
+                    <span class="result-row-label">Total relief</span>
+                    <span class="result-row-value" id="sv-relief">—</span>
+                  </div>
+                  <div class="result-row">
+                    <span class="result-row-label">Average elevation</span>
+                    <span class="result-row-value" id="sv-avg">—</span>
+                  </div>
+                  <div class="result-row">
+                    <span class="result-row-label">Elev. std deviation</span>
+                    <span class="result-row-value" id="sv-std">—</span>
+                  </div>
+                  <div class="result-row">
+                    <span class="result-row-label">Overall avg gradient</span>
+                    <span class="result-row-value" id="sv-grad">—</span>
+                  </div>
+                  <div class="result-row">
+                    <span class="result-row-label">Water flows toward</span>
+                    <span class="result-row-value" id="sv-flow">—</span>
+                  </div>
+                </div>
+                <button class="gps-btn gps-btn-secondary" style="margin-top:10px;margin-bottom:0" onclick="surveyExport()">📋 Export CSV</button>
+              </div>
+
+              <button class="gps-btn gps-btn-primary" id="survey-calc-btn" style="display:none" onclick="surveyCalculate()">
+                📊 Analyse Terrain
+              </button>
+            </div>
+
+            <!-- ── TARGET DEVIATION ── -->
+            <div class="elev-panel" id="elev-panel-deviation">
+              <div class="calc-card">
+                <div class="calc-card-title" style="color:var(--amber)">Target Slope</div>
+                <div class="field-group">
+                  <label class="field-label">Your target / design gradient</label>
+                  <div class="field-row">
+                    <input type="number" class="field-input" id="dev-target" value="2" step="0.1" oninput="deviationCalc()">
+                    <span class="field-text" style="padding:0 10px">%</span>
+                  </div>
+                </div>
+                <p style="font-size:12px;color:var(--text3);line-height:1.5">
+                  Common targets: drainage 1–2% · irrigation channel 0.5–1% · road 5–8%
+                </p>
+              </div>
+
+              <div class="calc-card">
+                <div class="calc-card-title" style="color:var(--blue)">Measure Actual Slope</div>
+                <label class="field-label" style="margin-bottom:6px">Point A</label>
+                <div class="point-set-row">
+                  <div class="point-label-badge">A</div>
+                  <div class="point-info-box" id="dev-a-info"><span class="point-info-empty">Not set yet</span></div>
+                  <button class="gps-btn gps-btn-primary" style="width:auto;padding:0 14px;margin-bottom:0;flex:none" onclick="devSetPoint('A')">📍</button>
+                </div>
+                <label class="field-label" style="margin-bottom:6px;margin-top:8px">Point B</label>
+                <div class="point-set-row">
+                  <div class="point-label-badge">B</div>
+                  <div class="point-info-box" id="dev-b-info"><span class="point-info-empty">Not set yet</span></div>
+                  <button class="gps-btn gps-btn-primary" style="width:auto;padding:0 14px;margin-bottom:0;flex:none" onclick="devSetPoint('B')">📍</button>
+                </div>
+                <div id="dev-status"></div>
+              </div>
+
+              <div class="calc-card" id="dev-result-card" style="display:none">
+                <div class="calc-card-title" style="color:var(--green)">Deviation Results</div>
+                <div id="dev-acc-warn"></div>
+
+                <div class="slope-result-grid" style="grid-template-columns:1fr 1fr">
+                  <div class="slope-card">
+                    <div class="slope-card-value" id="dev-actual-pct">—</div>
+                    <div class="slope-card-unit">%</div>
+                    <div class="slope-card-label">Actual</div>
+                  </div>
+                  <div class="slope-card">
+                    <div class="slope-card-value" id="dev-target-pct">—</div>
+                    <div class="slope-card-unit">%</div>
+                    <div class="slope-card-label">Target</div>
+                  </div>
+                </div>
+
+                <div class="result-box">
+                  <div class="result-row">
+                    <span class="result-row-label">Deviation</span>
+                    <span class="result-row-value" id="dev-deviation">—</span>
+                  </div>
+                  <div class="result-row">
+                    <span class="result-row-label">% of target</span>
+                    <span class="result-row-value" id="dev-pct-target">—</span>
+                  </div>
+                  <div class="result-row">
+                    <span class="result-row-label">Status</span>
+                    <span class="result-row-value" id="dev-status-val">—</span>
+                  </div>
+                  <div class="result-row">
+                    <span class="result-row-label">Horizontal distance</span>
+                    <span class="result-row-value" id="dev-dist">—</span>
+                  </div>
+                  <div class="result-row">
+                    <span class="result-row-label">Actual height diff</span>
+                    <span class="result-row-value" id="dev-actual-h">—</span>
+                  </div>
+                  <div class="result-row">
+                    <span class="result-row-label">Ideal height diff</span>
+                    <span class="result-row-value" id="dev-ideal-h" style="color:var(--amber)">—</span>
+                  </div>
+                  <div class="result-row">
+                    <span class="result-row-label">Excess / deficit</span>
+                    <span class="result-row-value" id="dev-diff-h">—</span>
+                  </div>
+                  <div class="result-row">
+                    <span class="result-row-label">Water flows toward</span>
+                    <span class="result-row-value" id="dev-flow">—</span>
+                  </div>
+                </div>
+                <button class="gps-btn gps-btn-secondary" style="margin-top:10px;margin-bottom:0" onclick="devCopy()">📋 Copy Result</button>
+              </div>
+              <button class="gps-btn gps-btn-danger" onclick="devReset()">↺ Reset</button>
+            </div>
+
+          </div><!-- /elevation-unlock-wrap -->
+        </div><!-- /panel-elevation -->
+
       </div><!-- /gps-body -->
     </div><!-- /screen-gps -->
 
@@ -1977,7 +2396,7 @@ html, body {
           <div class="settings-section-title">About</div>
           <div class="about-card">
             <div class="about-version">AgriConvert Pro</div>
-            <div class="about-sub">v1.3.1 · Built for Malaysian durian farming</div>
+            <div class="about-sub">v1.3.2 · Built for Malaysian durian farming</div>
             <div class="about-tags">
               <span class="about-tag badge-metric">Offline Ready</span>
               <span class="about-tag badge-imperial">PWA</span>
@@ -2025,15 +2444,15 @@ html, body {
       </div>
       <div class="pay-row">
         <span class="pay-key">Bank</span>
-        <span class="pay-val">Maybank</span>
+        <span class="pay-val">⚠️ YOUR_BANK_NAME</span>
       </div>
       <div class="pay-row">
         <span class="pay-key">Account No.</span>
-        <span class="pay-val">1580 9795 4342</span>
+        <span class="pay-val">⚠️ YOUR_ACCOUNT_NO</span>
       </div>
       <div class="pay-row">
         <span class="pay-key">Name</span>
-        <span class="pay-val">LEE KAH POE</span>
+        <span class="pay-val">⚠️ YOUR_NAME</span>
       </div>
       <div class="pay-row">
         <span class="pay-key">Reference</span>
@@ -2047,11 +2466,11 @@ html, body {
 
     <div class="contact-btns">
       <!-- ⚠️ PLACEHOLDER — Replace 601XXXXXXXXX with your WhatsApp number (no spaces, no +) -->
-      <a class="btn-whatsapp" href="https://wa.me/60122935906?text=Hi%2C%20I%20paid%20for%20AgriConvert%20GPS.%20My%20email%3A%20" target="_blank">
+      <a class="btn-whatsapp" href="https://wa.me/601XXXXXXXXX?text=Hi%2C%20I%20paid%20for%20AgriConvert%20GPS.%20My%20email%3A%20" target="_blank">
         💬 WhatsApp
       </a>
       <!-- ⚠️ PLACEHOLDER — Replace YOUR_GOOGLE_FORM_URL with your actual Google Form link -->
-      <a class="btn-form" href="https://forms.gle/vWiCZxuonJ8ibDeK7" target="_blank">
+      <a class="btn-form" href="https://forms.gle/YOUR_GOOGLE_FORM_URL" target="_blank">
         📋 Google Form
       </a>
     </div>
@@ -2764,7 +3183,7 @@ function applyGPSLockState() {
   }
 
   // Show/hide dimmed overlays for each tool
-  const tools = ['stamp', 'tree', 'boundary', 'distance'];
+  const tools = ['stamp', 'tree', 'boundary', 'distance', 'elevation'];
   tools.forEach(t => {
     const lockEl   = document.getElementById(t + '-lock-wrap');
     const unlockEl = document.getElementById(t + '-unlock-wrap');
@@ -2984,9 +3403,10 @@ function switchGPS(tab) {
   gpsState.activeGPS = tab;
   document.querySelectorAll('.gps-tab').forEach(t => t.classList.toggle('active', t.dataset.gps === tab));
   document.querySelectorAll('.gps-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + tab));
-  if (tab === 'stamp')    renderStamps();
-  if (tab === 'tree')     renderTrees();
-  if (tab === 'boundary') renderBoundaryPoints();
+  if (tab === 'stamp')     renderStamps();
+  if (tab === 'tree')      renderTrees();
+  if (tab === 'boundary')  renderBoundaryPoints();
+  if (tab === 'elevation') { renderElevStamps(); renderSurveyPoints(); }
 }
 
 // ── GPS HELPER ──
@@ -3444,6 +3864,382 @@ function distReset() {
 }
 
 
+// ═══════════════════════════════════════════════
+// ELEVATION MODULE
+// ═══════════════════════════════════════════════
+
+let elevState = {
+  activeElev: 'stamp',
+  stamps: [],
+  surveyPts: [],
+  _lastReading: null,
+};
+
+function saveElev() {
+  try {
+    localStorage.setItem('agri_elev', JSON.stringify({
+      stamps:    elevState.stamps,
+      surveyPts: elevState.surveyPts,
+    }));
+  } catch(e) {}
+}
+
+function loadElev() {
+  try {
+    const d = JSON.parse(localStorage.getItem('agri_elev') || '{}');
+    if (d.stamps)    elevState.stamps    = d.stamps;
+    if (d.surveyPts) elevState.surveyPts = d.surveyPts;
+  } catch(e) {}
+}
+
+function switchElev(tab) {
+  elevState.activeElev = tab;
+  document.querySelectorAll('.elev-tab').forEach(t =>
+    t.classList.toggle('active', t.dataset.elev === tab));
+  document.querySelectorAll('.elev-panel').forEach(p =>
+    p.classList.toggle('active', p.id === 'elev-panel-' + tab));
+}
+
+function getAltitude(onSuccess, onError) {
+  if (!navigator.geolocation) { onError('Geolocation not supported.'); return; }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const alt    = pos.coords.altitude;
+      const altAcc = pos.coords.altitudeAccuracy;
+      const lat    = pos.coords.latitude;
+      const lng    = pos.coords.longitude;
+      const posAcc = pos.coords.accuracy;
+      if (alt === null || alt === undefined) {
+        onError('Altitude not available. Enable GPS and try outdoors in open sky.');
+        return;
+      }
+      onSuccess({ alt, altAcc: altAcc || 10, lat, lng, posAcc });
+    },
+    err => {
+      const msgs = { 1:'Location permission denied.', 2:'GPS signal unavailable — try open sky.', 3:'GPS timed out. Try again.' };
+      onError(msgs[err.code] || 'GPS error.');
+    },
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 3000 }
+  );
+}
+
+function accWarnHTML(altAcc) {
+  if (!altAcc) return '';
+  if (altAcc <= 3)  return `<div class="acc-warning good">✅ Good accuracy: ±${Math.round(altAcc)}m</div>`;
+  if (altAcc <= 8)  return `<div class="acc-warning fair">⚠️ Fair accuracy: ±${Math.round(altAcc)}m — usable but check twice</div>`;
+  return `<div class="acc-warning poor">❌ Poor accuracy: ±${Math.round(altAcc)}m — move to open sky and retry</div>`;
+}
+
+function terrainRating(pct) {
+  if (pct < 1)  return { emoji:'🟢', label:'Near Flat',      color:'var(--green)', note:'Potential waterlogging on flat sections' };
+  if (pct < 3)  return { emoji:'🟢', label:'Gentle Slope',   color:'var(--green)', note:'Ideal for most crops and drainage' };
+  if (pct < 8)  return { emoji:'🟡', label:'Moderate Slope', color:'var(--amber)', note:'Good natural drainage, manageable farming' };
+  if (pct < 15) return { emoji:'🟠', label:'Steep Slope',    color:'var(--amber)', note:'Erosion risk — consider terracing' };
+  return          { emoji:'🔴', label:'Very Steep',          color:'var(--red)',   note:'Significant erosion risk' };
+}
+
+function bearingToDir(bearing) {
+  return ['N','NE','E','SE','S','SW','W','NW'][Math.round(bearing / 45) % 8];
+}
+
+function flowDir(latA, lngA, latB, lngB, altA, altB) {
+  const dLng = (lngB - lngA) * Math.PI / 180;
+  const lat1 = latA * Math.PI / 180, lat2 = latB * Math.PI / 180;
+  const y = Math.sin(dLng) * Math.cos(lat2);
+  const x = Math.cos(lat1)*Math.sin(lat2) - Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLng);
+  let bearing = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+  if (altA < altB) bearing = (bearing + 180) % 360;
+  return { bearing: Math.round(bearing), dir: bearingToDir(bearing) };
+}
+
+// ── 1. ELEVATION STAMP ──
+function elevStampRead() {
+  const btn = document.getElementById('es-read-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Reading elevation...';
+  setStatusPill('es-status', 'acquiring', '📡 Reading altitude...');
+  document.getElementById('es-result').style.display = 'none';
+
+  getAltitude(data => {
+    elevState._lastReading = data;
+    btn.disabled = false;
+    btn.innerHTML = '📍 Re-read Elevation';
+    setStatusPill('es-status', 'got', `✅ Got elevation ±${Math.round(data.altAcc)}m`);
+    document.getElementById('es-val').textContent = fmtCalc(data.alt);
+    document.getElementById('es-sub').textContent = `GPS alt · ±${Math.round(data.altAcc)}m · ${data.lat.toFixed(5)}°N`;
+    document.getElementById('es-acc-warn').innerHTML = accWarnHTML(data.altAcc);
+    document.getElementById('es-result').style.display = 'block';
+  }, err => {
+    btn.disabled = false;
+    btn.innerHTML = '📍 Read My Elevation';
+    setStatusPill('es-status', 'error', '❌ ' + err);
+  });
+}
+
+function elevStampSave() {
+  const d = elevState._lastReading;
+  if (!d) return;
+  const label = document.getElementById('es-note').value.trim() || 'Point ' + (elevState.stamps.length + 1);
+  elevState.stamps.unshift({ label, alt: d.alt, altAcc: d.altAcc, lat: d.lat, lng: d.lng, time: Date.now() });
+  if (elevState.stamps.length > 30) elevState.stamps.pop();
+  saveElev(); renderElevStamps();
+  document.getElementById('es-note').value = '';
+  showToast('Saved: ' + label);
+}
+
+function elevStampCopy() {
+  const d = elevState._lastReading;
+  if (!d) return;
+  navigator.clipboard.writeText(`Elevation: ${fmtCalc(d.alt)}m ASL · ±${Math.round(d.altAcc)}m · ${d.lat.toFixed(6)}, ${d.lng.toFixed(6)}`).catch(()=>{});
+  showToast('Elevation copied');
+}
+
+function renderElevStamps() {
+  const el = document.getElementById('es-list');
+  const stamps = elevState.stamps;
+  if (!stamps.length) { el.innerHTML = '<div class="empty-history">No elevations saved yet.</div>'; return; }
+  const alts = stamps.map(s => s.alt);
+  const range = (Math.max(...alts) - Math.min(...alts)).toFixed(1);
+  document.getElementById('es-range-label').textContent = `Relief: ${range}m`;
+  el.innerHTML = stamps.map((s,i) => `
+    <div class="survey-item">
+      <div class="survey-num">${stamps.length - i}</div>
+      <div class="survey-info">
+        <div class="survey-label">${s.label}</div>
+        <div class="survey-detail">±${Math.round(s.altAcc)}m · ${timeAgo(s.time)}</div>
+      </div>
+      <div class="survey-elev">${fmtCalc(s.alt)}m</div>
+    </div>`).join('');
+}
+
+function elevStampClear() {
+  if (!confirm('Clear all saved elevations?')) return;
+  elevState.stamps = []; saveElev(); renderElevStamps();
+  showToast('Cleared');
+}
+
+// ── 2. SLOPE CALCULATOR ──
+let slopeData = { A: null, B: null };
+
+function slopeSetPoint(which) {
+  const btn = document.getElementById('slope-' + which.toLowerCase() + '-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+  setStatusPill('slope-status', 'acquiring', `📡 Reading Point ${which}...`);
+
+  getAltitude(data => {
+    slopeData[which] = data;
+    document.getElementById('slope-' + which.toLowerCase() + '-info').innerHTML = `
+      <div class="point-info-elev">${fmtCalc(data.alt)} m</div>
+      <div class="point-info-acc">±${Math.round(data.altAcc)}m alt · ±${Math.round(data.posAcc)}m pos</div>`;
+    btn.disabled = false; btn.innerHTML = '✅';
+    setStatusPill('slope-status', 'got', `✅ Point ${which} set`);
+    if (slopeData.A && slopeData.B) slopeCalculate();
+  }, err => {
+    btn.disabled = false; btn.innerHTML = '📍';
+    setStatusPill('slope-status', 'error', '❌ ' + err);
+  });
+}
+
+function slopeCalculate() {
+  const A = slopeData.A, B = slopeData.B;
+  const distM  = haversineM(A.lat, A.lng, B.lat, B.lng);
+  const hDiff  = A.alt - B.alt;
+  const absH   = Math.abs(hDiff);
+  const grad   = distM > 0 ? absH / distM * 100 : 0;
+  const ratio  = grad > 0 ? distM / absH : 0;
+  const deg    = Math.atan2(absH, distM) * 180 / Math.PI;
+  const errPct = distM > 0 ? (Math.sqrt(A.altAcc**2 + B.altAcc**2) / distM * 100).toFixed(1) : '—';
+  const flow   = flowDir(A.lat, A.lng, B.lat, B.lng, A.alt, B.alt);
+
+  document.getElementById('slope-pct').textContent   = grad.toFixed(2);
+  document.getElementById('slope-ratio').textContent = ratio > 0 ? ratio.toFixed(1) : '—';
+  document.getElementById('slope-deg').textContent   = deg.toFixed(2);
+  document.getElementById('slope-hdiff').textContent = `${absH.toFixed(2)}m (${hDiff > 0 ? 'A higher' : 'B higher'})`;
+  document.getElementById('slope-hdist').textContent = `${distM.toFixed(1)}m`;
+  document.getElementById('slope-dir').textContent   = `${hDiff > 0 ? 'A→B' : 'B→A'} downhill`;
+  document.getElementById('slope-flow').textContent  = `${flow.dir} (${flow.bearing}°)`;
+  document.getElementById('slope-err').textContent   = `±${errPct}%`;
+  document.getElementById('slope-acc-warn').innerHTML = accWarnHTML(Math.max(A.altAcc, B.altAcc));
+  document.getElementById('slope-result-card').style.display = 'block';
+}
+
+function slopeCopy() {
+  const pct = document.getElementById('slope-pct').textContent;
+  const deg = document.getElementById('slope-deg').textContent;
+  const dist= document.getElementById('slope-hdist').textContent;
+  const flow= document.getElementById('slope-flow').textContent;
+  navigator.clipboard.writeText(`Slope: ${pct}% / ${deg}° · Distance: ${dist} · Water flow: ${flow}`).catch(()=>{});
+  showToast('Result copied');
+}
+
+function slopeReset() {
+  slopeData = { A: null, B: null };
+  ['a','b'].forEach(w => {
+    document.getElementById(`slope-${w}-info`).innerHTML = '<span class="point-info-empty">Not set yet</span>';
+    document.getElementById(`slope-${w}-btn`).innerHTML = '📍';
+  });
+  document.getElementById('slope-result-card').style.display = 'none';
+  document.getElementById('slope-status').innerHTML = '';
+}
+
+// ── 3. TERRAIN SURVEY ──
+function surveyAddPoint() {
+  if (elevState.surveyPts.length >= 10) { showToast('Maximum 10 points reached'); return; }
+  const btn = document.getElementById('survey-add-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Reading...';
+  setStatusPill('survey-status', 'acquiring', '📡 Reading elevation...');
+
+  getAltitude(data => {
+    const label = document.getElementById('survey-label-input').value.trim() || 'P' + (elevState.surveyPts.length + 1);
+    elevState.surveyPts.push({ label, alt: data.alt, altAcc: data.altAcc, lat: data.lat, lng: data.lng });
+    document.getElementById('survey-label-input').value = '';
+    saveElev(); renderSurveyPoints();
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> + Add Survey Point';
+    setStatusPill('survey-status', 'got', `✅ ${label} — ${fmtCalc(data.alt)}m`);
+    if (elevState.surveyPts.length >= 2) document.getElementById('survey-calc-btn').style.display = 'flex';
+  }, err => {
+    btn.disabled = false;
+    btn.innerHTML = '+ Add Survey Point';
+    setStatusPill('survey-status', 'error', '❌ ' + err);
+  });
+}
+
+function renderSurveyPoints() {
+  const pts = elevState.surveyPts;
+  document.getElementById('survey-count-label').textContent = `${pts.length} / 10`;
+  const el = document.getElementById('survey-list');
+  if (!pts.length) { el.innerHTML = '<div class="empty-history">No points yet.</div>'; return; }
+  el.innerHTML = pts.map((p,i) => `
+    <div class="survey-item">
+      <div class="survey-num">P${i+1}</div>
+      <div class="survey-info">
+        <div class="survey-label">${p.label}</div>
+        <div class="survey-detail">${p.lat.toFixed(5)}°N · ±${Math.round(p.altAcc)}m</div>
+      </div>
+      <div class="survey-elev">${fmtCalc(p.alt)}m</div>
+    </div>`).join('');
+}
+
+function surveyCalculate() {
+  const pts = elevState.surveyPts;
+  if (pts.length < 2) return;
+  const alts   = pts.map(p => p.alt);
+  const maxAlt = Math.max(...alts), minAlt = Math.min(...alts);
+  const maxPt  = pts[alts.indexOf(maxAlt)], minPt = pts[alts.indexOf(minAlt)];
+  const relief = maxAlt - minAlt;
+  const avg    = alts.reduce((a,b) => a+b, 0) / alts.length;
+  const std    = Math.sqrt(alts.map(a => (a-avg)**2).reduce((a,b) => a+b, 0) / alts.length);
+  const dist   = haversineM(pts[0].lat, pts[0].lng, pts[pts.length-1].lat, pts[pts.length-1].lng);
+  const grad   = dist > 0 ? relief / dist * 100 : 0;
+  const flow   = flowDir(maxPt.lat, maxPt.lng, minPt.lat, minPt.lng, maxAlt, minAlt);
+  const r      = terrainRating(grad);
+
+  document.getElementById('survey-terrain-pill').innerHTML = `
+    <div class="terrain-pill" style="background:rgba(0,0,0,0.2);border:1px solid ${r.color};color:${r.color}">
+      ${r.emoji} ${r.label} — ${r.note}
+    </div>`;
+  document.getElementById('sv-high').textContent  = `${fmtCalc(maxAlt)}m (${maxPt.label})`;
+  document.getElementById('sv-low').textContent   = `${fmtCalc(minAlt)}m (${minPt.label})`;
+  document.getElementById('sv-relief').textContent= `${fmtCalc(relief)}m`;
+  document.getElementById('sv-avg').textContent   = `${fmtCalc(avg)}m ASL`;
+  document.getElementById('sv-std').textContent   = `±${fmtCalc(std)}m`;
+  document.getElementById('sv-grad').textContent  = `${fmtCalc(grad)}%`;
+  document.getElementById('sv-flow').textContent  = `${flow.dir} (${flow.bearing}°) → ${minPt.label}`;
+  document.getElementById('survey-result-card').style.display = 'block';
+}
+
+function surveyExport() {
+  if (!elevState.surveyPts.length) { showToast('No points to export'); return; }
+  const rows = elevState.surveyPts.map((p,i) =>
+    `P${i+1},"${p.label}",${p.alt.toFixed(2)},${Math.round(p.altAcc)},${p.lat.toFixed(6)},${p.lng.toFixed(6)}`);
+  navigator.clipboard.writeText(['Point,Label,Altitude_m,AltAcc_m,Lat,Lng',...rows].join('\n')).catch(()=>{});
+  showToast('CSV copied — paste into Notion/Excel');
+}
+
+function surveyUndo() {
+  if (!elevState.surveyPts.length) return;
+  elevState.surveyPts.pop(); saveElev(); renderSurveyPoints();
+  if (elevState.surveyPts.length < 2) {
+    document.getElementById('survey-calc-btn').style.display = 'none';
+    document.getElementById('survey-result-card').style.display = 'none';
+  }
+}
+
+function surveyClear() {
+  if (!confirm('Clear all survey points?')) return;
+  elevState.surveyPts = []; saveElev(); renderSurveyPoints();
+  document.getElementById('survey-calc-btn').style.display = 'none';
+  document.getElementById('survey-result-card').style.display = 'none';
+}
+
+// ── 4. DEVIATION CHECKER ──
+let devData = { A: null, B: null };
+
+function devSetPoint(which) {
+  setStatusPill('dev-status', 'acquiring', `📡 Reading Point ${which}...`);
+  getAltitude(data => {
+    devData[which] = data;
+    document.getElementById('dev-' + which.toLowerCase() + '-info').innerHTML = `
+      <div class="point-info-elev">${fmtCalc(data.alt)} m</div>
+      <div class="point-info-acc">±${Math.round(data.altAcc)}m · ${data.lat.toFixed(5)}°N</div>`;
+    setStatusPill('dev-status', 'got', `✅ Point ${which} set`);
+    if (devData.A && devData.B) deviationCalc();
+  }, err => setStatusPill('dev-status', 'error', '❌ ' + err));
+}
+
+function deviationCalc() {
+  const target = parseFloat(document.getElementById('dev-target').value) || 0;
+  document.getElementById('dev-target-pct').textContent = fmtCalc(target);
+  if (!devData.A || !devData.B) return;
+  const A = devData.A, B = devData.B;
+  const distM   = haversineM(A.lat, A.lng, B.lat, B.lng);
+  const absH    = Math.abs(A.alt - B.alt);
+  const actual  = distM > 0 ? absH / distM * 100 : 0;
+  const dev     = actual - target;
+  const pctTgt  = target > 0 ? dev / target * 100 : 0;
+  const idealH  = distM * (target / 100);
+  const diffH   = absH - idealH;
+  const flow    = flowDir(A.lat, A.lng, B.lat, B.lng, A.alt, B.alt);
+
+  let statusText, statusColor;
+  if (Math.abs(dev) <= 0.3)  { statusText='✅ On target'; statusColor='var(--green)'; }
+  else if (dev > 0)           { statusText='🔴 Too steep'; statusColor='var(--red)'; }
+  else                        { statusText='🔵 Too flat';  statusColor='var(--blue)'; }
+
+  document.getElementById('dev-actual-pct').textContent = fmtCalc(actual);
+  document.getElementById('dev-deviation').textContent  = (dev>=0?'+':'')+fmtCalc(dev)+'%';
+  document.getElementById('dev-deviation').style.color  = dev>0.3?'var(--red)':dev<-0.3?'var(--blue)':'var(--green)';
+  document.getElementById('dev-pct-target').textContent = (pctTgt>=0?'+':'')+fmtCalc(pctTgt)+'% of target';
+  document.getElementById('dev-status-val').textContent = statusText;
+  document.getElementById('dev-status-val').style.color = statusColor;
+  document.getElementById('dev-dist').textContent       = fmtCalc(distM)+'m';
+  document.getElementById('dev-actual-h').textContent   = fmtCalc(absH)+'m';
+  document.getElementById('dev-ideal-h').textContent    = fmtCalc(idealH)+'m';
+  document.getElementById('dev-diff-h').textContent     = (diffH>=0?'+':'')+fmtCalc(diffH)+'m';
+  document.getElementById('dev-flow').textContent       = `${flow.dir} (${flow.bearing}°)`;
+  document.getElementById('dev-acc-warn').innerHTML     = accWarnHTML(Math.max(A.altAcc, B.altAcc));
+  document.getElementById('dev-result-card').style.display = 'block';
+}
+
+function devCopy() {
+  const actual = document.getElementById('dev-actual-pct').textContent;
+  const target = document.getElementById('dev-target-pct').textContent;
+  const dev    = document.getElementById('dev-deviation').textContent;
+  const status = document.getElementById('dev-status-val').textContent;
+  navigator.clipboard.writeText(`Slope: ${actual}% actual vs ${target}% target · Dev: ${dev} · ${status}`).catch(()=>{});
+  showToast('Result copied');
+}
+
+function devReset() {
+  devData = { A: null, B: null };
+  ['a','b'].forEach(w => {
+    document.getElementById(`dev-${w}-info`).innerHTML = '<span class="point-info-empty">Not set yet</span>';
+  });
+  document.getElementById('dev-result-card').style.display = 'none';
+  document.getElementById('dev-status').innerHTML = '';
+}
+
 function fmtCalc(val) {
   if (!isFinite(val) || val === 0) return '0';
   if (val >= 10000) return val.toLocaleString('en-MY', { maximumFractionDigits: 1 });
@@ -3493,9 +4289,12 @@ function init() {
   calcDilution();
   calcPressure();
   loadGPS();
+  loadElev();
   renderStamps();
   renderTrees();
   renderBoundaryPoints();
+  renderElevStamps();
+  renderSurveyPoints();
   applyGPSLockState();
   updateOnlineStatus();
 }
