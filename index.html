@@ -1142,7 +1142,7 @@ html, body {
         <div>
           <div class="brand-name">AgriConvert</div>
         </div>
-        <div class="brand-version">v1.3.2</div>
+        <div class="brand-version">v1.3.3</div>
       </div>
       <div class="offline-pill" id="offlinePill">📴 Offline</div>
     </div>
@@ -2396,7 +2396,7 @@ html, body {
           <div class="settings-section-title">About</div>
           <div class="about-card">
             <div class="about-version">AgriConvert Pro</div>
-            <div class="about-sub">v1.3.2 · Built for Malaysian durian farming</div>
+            <div class="about-sub">v1.3.3 · Built for Malaysian durian farming</div>
             <div class="about-tags">
               <span class="about-tag badge-metric">Offline Ready</span>
               <span class="about-tag badge-imperial">PWA</span>
@@ -3102,20 +3102,57 @@ function calcPressure() {
 // PREMIUM / LICENCE SYSTEM
 // ═══════════════════════════════════════════════
 
-// ── Token validation ──
-// Valid format: AGRI-YYYY-XXXXXX-XX  (20 chars total)
-// YYYY = year issued, must be >= 2026
-// This is a client-side format check only.
-// Real validation uses expiry date stored on activation.
+// ⚠️ IMPORTANT: This secret key MUST match the key in token-generator.html
+// Never change this after issuing tokens — it will invalidate all existing tokens
+const HMAC_SECRET = 'AgriF@rm2026#MY$Durian';
+
+// ⚠️ PLACEHOLDER: Paste your Google Apps Script Web App URL here after setup
+// Leave empty ('') to skip Sheet verification (HMAC-only mode)
+const SHEET_URL = '';
+
+// ── HMAC-SHA256 ──
+async function hmacSHA256(key, message) {
+  const enc = new TextEncoder();
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw', enc.encode(key), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+  );
+  return new Uint8Array(await crypto.subtle.sign('HMAC', cryptoKey, enc.encode(message)));
+}
+
+function bytesToBase36(bytes, len) {
+  const chars = '0123456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+  let num = BigInt(0);
+  for (const b of bytes.slice(0, 4)) num = (num << 8n) | BigInt(b);
+  let result = '';
+  let n = num;
+  for (let i = 0; i < len; i++) {
+    result = chars[Number(n % BigInt(chars.length))] + result;
+    n = n / BigInt(chars.length);
+  }
+  return result.slice(-len).padStart(len, '0');
+}
+
+async function verifyHMACToken(token, email) {
+  try {
+    const parts = token.toUpperCase().trim().split('-');
+    if (parts.length !== 4 || parts[0] !== 'AGRI') return false;
+    const year  = parts[1];
+    const input = email.trim().toLowerCase() + year;
+    const hmac  = await hmacSHA256(HMAC_SECRET, input);
+    const body  = bytesToBase36(hmac.slice(0, 4), 5);
+    const sig   = bytesToBase36(hmac.slice(4, 6), 2);
+    const expected = `AGRI-${year}-${body}-${sig}`;
+    return token.toUpperCase().trim() === expected;
+  } catch(e) { return false; }
+}
 
 function tokenIsValidFormat(token) {
   return /^AGRI-20\d{2}-[A-Z0-9]{3,8}-[A-Z0-9]{2,4}$/.test(token.toUpperCase().trim());
 }
 
 function loadLicence() {
-  try {
-    return JSON.parse(localStorage.getItem('agri_licence') || 'null');
-  } catch(e) { return null; }
+  try { return JSON.parse(localStorage.getItem('agri_licence') || 'null'); }
+  catch(e) { return null; }
 }
 
 function saveLicence(data) {
@@ -3125,22 +3162,17 @@ function saveLicence(data) {
 function getLicenceStatus() {
   const lic = loadLicence();
   if (!lic) {
-    // Check if within free trial window (14 days from first app open)
     const firstOpen = localStorage.getItem('agri_first_open');
     if (!firstOpen) {
       localStorage.setItem('agri_first_open', Date.now().toString());
       return { state: 'trial', daysLeft: 14 };
     }
-    const elapsed = (Date.now() - parseInt(firstOpen)) / (1000 * 60 * 60 * 24);
+    const elapsed  = (Date.now() - parseInt(firstOpen)) / (1000 * 60 * 60 * 24);
     const daysLeft = Math.max(0, Math.ceil(14 - elapsed));
-    return daysLeft > 0
-      ? { state: 'trial', daysLeft }
-      : { state: 'expired_trial', daysLeft: 0 };
+    return daysLeft > 0 ? { state: 'trial', daysLeft } : { state: 'expired_trial', daysLeft: 0 };
   }
-  // Has licence — check expiry
-  const expiry = new Date(lic.expiry);
-  const today  = new Date();
-  const daysLeft = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+  const expiry   = new Date(lic.expiry);
+  const daysLeft = Math.ceil((expiry - new Date()) / (1000 * 60 * 60 * 24));
   if (daysLeft <= 0) return { state: 'expired', lic };
   return { state: 'active', daysLeft, lic };
 }
@@ -3150,39 +3182,31 @@ function isGPSUnlocked() {
   return s.state === 'trial' || s.state === 'active';
 }
 
-// ── Apply lock/unlock state to GPS tab ──
+// ── Apply lock/unlock state ──
 function applyGPSLockState() {
-  const status = getLicenceStatus();
+  const status   = getLicenceStatus();
   const unlocked = isGPSUnlocked();
 
-  // Banner visibility
-  document.getElementById('gps-lock-banner-wrap').style.display   = unlocked && status.state !== 'active' ? 'block' : (status.state === 'active' ? 'none' : 'block');
+  document.getElementById('gps-lock-banner-wrap').style.display   = status.state === 'active' ? 'none' : 'block';
   document.getElementById('gps-active-banner-wrap').style.display = status.state === 'active' ? 'block' : 'none';
 
-  // Trial countdown
   if (status.state === 'trial') {
-    const tw = document.getElementById('trial-countdown-wrap');
-    tw.style.display = 'block';
+    document.getElementById('trial-countdown-wrap').style.display = 'block';
     document.getElementById('trial-pill').textContent = `⏳ Free trial: ${status.daysLeft} day${status.daysLeft !== 1 ? 's' : ''} remaining`;
-    // Update action buttons for trial state
     document.getElementById('gps-lock-action-btns').innerHTML = `
       <button class="btn-trial" onclick="showUpgradeModal()">🌟 Unlock GPS — RM 9.90</button>
-      <button class="btn-token" onclick="showTokenModal()">🔑 Enter Token</button>
-    `;
+      <button class="btn-token" onclick="showTokenModal()">🔑 Enter Token</button>`;
   } else if (status.state === 'expired_trial') {
     document.getElementById('trial-countdown-wrap').style.display = 'none';
     document.getElementById('gps-lock-action-btns').innerHTML = `
       <button class="btn-trial" onclick="showUpgradeModal()">🌟 Unlock GPS — RM 9.90</button>
-      <button class="btn-token" onclick="showTokenModal()">🔑 Enter Token</button>
-    `;
+      <button class="btn-token" onclick="showTokenModal()">🔑 Enter Token</button>`;
   }
 
   if (status.state === 'active') {
-    const pill = document.getElementById('gps-active-pill');
-    pill.textContent = `✅ GPS Premium — Lifetime Access`;
+    document.getElementById('gps-active-pill').textContent = '✅ GPS Premium — Lifetime Access';
   }
 
-  // Show/hide dimmed overlays for each tool
   const tools = ['stamp', 'tree', 'boundary', 'distance', 'elevation'];
   tools.forEach(t => {
     const lockEl   = document.getElementById(t + '-lock-wrap');
@@ -3193,14 +3217,12 @@ function applyGPSLockState() {
     }
   });
 
-  // Render settings premium card
   renderPremiumSettings(status);
 }
 
 function renderPremiumSettings(status) {
   const card = document.getElementById('premium-settings-card');
   if (!card) return;
-
   if (status.state === 'active') {
     card.innerHTML = `
       <div class="premium-status-row">
@@ -3216,32 +3238,27 @@ function renderPremiumSettings(status) {
           <div class="settings-row-sub">Apply a replacement token if needed</div>
         </div>
         <button class="settings-action" onclick="showTokenModal()">Token</button>
-      </div>
-    `;
+      </div>`;
   } else if (status.state === 'expired') {
     card.innerHTML = `
       <div class="premium-status-row">
         <div class="premium-status-icon">⚠️</div>
         <div class="premium-status-info">
           <div class="premium-status-title">Token Invalid or Expired</div>
-          <div class="premium-status-sub">${status.lic.email} · Please contact support</div>
+          <div class="premium-status-sub">${status.lic.email} · Contact kplee85@gmail.com</div>
         </div>
       </div>
       <div class="settings-row">
-        <div class="settings-row-info">
-          <div class="settings-row-title">Re-enter Token</div>
-          <div class="settings-row-sub">Contact kplee85@gmail.com for assistance</div>
-        </div>
+        <div class="settings-row-info"><div class="settings-row-title">Re-enter Token</div></div>
         <button class="settings-action" onclick="showTokenModal()">Enter</button>
-      </div>
-    `;
+      </div>`;
   } else if (status.state === 'trial') {
     card.innerHTML = `
       <div class="premium-status-row">
         <div class="premium-status-icon">⏳</div>
         <div class="premium-status-info">
           <div class="premium-status-title">Free Trial — ${status.daysLeft} days left</div>
-          <div class="premium-status-sub">All GPS tools active during trial</div>
+          <div class="premium-status-sub">All GPS + Elevation tools active during trial</div>
         </div>
       </div>
       <div class="settings-row">
@@ -3257,8 +3274,7 @@ function renderPremiumSettings(status) {
           <div class="settings-row-sub">Enter it to activate your access</div>
         </div>
         <button class="settings-action" onclick="showTokenModal()">Enter</button>
-      </div>
-    `;
+      </div>`;
   } else {
     card.innerHTML = `
       <div class="premium-status-row">
@@ -3276,24 +3292,18 @@ function renderPremiumSettings(status) {
         <button class="settings-action" onclick="showUpgradeModal()">Unlock</button>
       </div>
       <div class="settings-row">
-        <div class="settings-row-info">
-          <div class="settings-row-title">Have a token?</div>
-        </div>
+        <div class="settings-row-info"><div class="settings-row-title">Have a token?</div></div>
         <button class="settings-action" onclick="showTokenModal()">Enter</button>
-      </div>
-    `;
+      </div>`;
   }
 }
 
 // ── Modals ──
-function showUpgradeModal() {
-  document.getElementById('upgrade-modal').style.display = 'flex';
-}
+function showUpgradeModal() { document.getElementById('upgrade-modal').style.display = 'flex'; }
 function closeUpgradeModal(e) {
   if (!e || e.target === document.getElementById('upgrade-modal'))
     document.getElementById('upgrade-modal').style.display = 'none';
 }
-
 function showTokenModal() {
   document.getElementById('upgrade-modal').style.display = 'none';
   document.getElementById('token-modal').style.display = 'flex';
@@ -3312,35 +3322,89 @@ function tokenInputFormat(el) {
   let v = el.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
   el.value = v;
   const fb = document.getElementById('token-feedback');
-  if (v.length === 0) { fb.textContent = ''; el.className = 'token-input'; return; }
+  if (!v.length) { fb.textContent = ''; el.className = 'token-input'; return; }
   if (tokenIsValidFormat(v)) {
-    fb.textContent = '✅ Token format valid — tap Activate';
-    fb.style.color = 'var(--green)';
-    el.className = 'token-input valid';
-  } else if (v.length >= 15) {
+    fb.textContent = '✅ Format valid — tap Activate';
+    fb.style.color = 'var(--green)'; el.className = 'token-input valid';
+  } else if (v.length >= 14) {
     fb.textContent = '❌ Invalid format. Expected: AGRI-2026-XXXXX-XX';
-    fb.style.color = 'var(--red)';
-    el.className = 'token-input invalid';
+    fb.style.color = 'var(--red)'; el.className = 'token-input invalid';
   } else {
-    fb.textContent = '';
-    el.className = 'token-input';
+    fb.textContent = ''; el.className = 'token-input';
   }
 }
 
-// ── Token activation ──
-function activateToken() {
+// ── Token activation (HMAC + Sheet) ──
+async function activateToken() {
   const token = document.getElementById('token-input').value.trim().toUpperCase();
-  const email = document.getElementById('token-email').value.trim();
+  const email = document.getElementById('token-email').value.trim().toLowerCase();
   const fb    = document.getElementById('token-feedback');
+  const btn   = document.querySelector('#token-modal .gps-btn-primary');
 
-  if (!email) { fb.textContent = '⚠️ Please enter your email'; fb.style.color = 'var(--amber)'; return; }
+  if (!email)  { fb.textContent = '⚠️ Please enter your email'; fb.style.color = 'var(--amber)'; return; }
   if (!tokenIsValidFormat(token)) { fb.textContent = '❌ Invalid token format'; fb.style.color = 'var(--red)'; return; }
 
-  // One-time lifetime purchase — no expiry
-  const licData = { token, email, expiry: '9999-12-31', plan: 'lifetime', activated: new Date().toISOString().split('T')[0] };
+  btn.disabled = true; btn.textContent = '⏳ Verifying...';
+  fb.textContent = '🔐 Checking HMAC signature...'; fb.style.color = 'var(--text2)';
+
+  // Step 1: HMAC verification (offline, instant)
+  const hmacValid = await verifyHMACToken(token, email);
+  if (!hmacValid) {
+    fb.textContent = '❌ Token does not match this email. Check email or token.';
+    fb.style.color = 'var(--red)';
+    document.getElementById('token-input').className = 'token-input invalid';
+    btn.disabled = false; btn.textContent = 'Activate GPS Access';
+    return;
+  }
+
+  fb.textContent = '✅ Signature valid. Checking registry...'; fb.style.color = 'var(--green)';
+
+  // Step 2: Sheet check (online only — skip if offline or no URL)
+  if (SHEET_URL && navigator.onLine) {
+    try {
+      const checkResp = await fetch(`${SHEET_URL}?action=checkToken&token=${encodeURIComponent(token)}`);
+      const checkData = await checkResp.json();
+
+      if (checkData.exists && checkData.revoked) {
+        fb.textContent = '❌ This token has been revoked. Contact kplee85@gmail.com.';
+        fb.style.color = 'var(--red)';
+        btn.disabled = false; btn.textContent = 'Activate GPS Access';
+        return;
+      }
+
+      if (checkData.exists && checkData.used && checkData.email !== email) {
+        fb.textContent = '❌ Token already activated by a different account.';
+        fb.style.color = 'var(--red)';
+        btn.disabled = false; btn.textContent = 'Activate GPS Access';
+        return;
+      }
+
+      // Mark as used on sheet
+      if (!checkData.used) {
+        await fetch(`${SHEET_URL}?action=markUsed&token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`);
+      }
+
+      fb.textContent = '✅ Registry verified.'; fb.style.color = 'var(--green)';
+    } catch(e) {
+      // Sheet unreachable — HMAC passed, allow with warning
+      fb.textContent = '⚠️ Registry offline — activating with signature only.';
+      fb.style.color = 'var(--amber)';
+    }
+  } else if (SHEET_URL && !navigator.onLine) {
+    fb.textContent = '⚠️ Offline — activating with signature only. Registry will sync when online.';
+    fb.style.color = 'var(--amber)';
+  }
+
+  // Step 3: Store licence
+  const licData = {
+    token, email,
+    expiry: '9999-12-31',
+    plan: 'lifetime',
+    activated: new Date().toISOString().split('T')[0],
+  };
   saveLicence(licData);
 
-  fb.textContent = '✅ Activated! GPS tools unlocked.';
+  fb.textContent = '✅ Activated! GPS + Elevation tools unlocked.';
   fb.style.color = 'var(--green)';
   document.getElementById('token-input').className = 'token-input valid';
 
@@ -3349,6 +3413,8 @@ function activateToken() {
     applyGPSLockState();
     showToast('GPS Premium activated! 🎉');
   }, 1200);
+
+  btn.disabled = false; btn.textContent = 'Activate GPS Access';
 }
 
 
