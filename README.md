@@ -9,42 +9,58 @@
 
 ## Changelog
 
-### v1.3.1 — Premium GPS System
-- **GPS tools now require unlock after 14-day free trial**
-- One-time payment: RM 9.90 · Lifetime access · No subscription
-- Soft-lock UI — tools visible but dimmed, tap any tool to see upgrade screen
-- Upgrade modal with DuitNow / bank transfer payment details
-- Token activation system — enter AGRI-XXXX-XXXXXX-XX token to unlock
-- WhatsApp + Google Form contact options after payment
-- Settings → Premium shows live status (trial / active / locked)
-- 14-day free trial starts automatically on first app open — no action needed
+### v1.3.2 — Elevation & Slope Tools
+- **New: 📊 Elevation tab** inside GPS — 5th sub-tab alongside Stamp/Trees/Boundary/Distance
+- All 4 elevation tools gated under the same RM 9.90 one-time premium unlock
+- **📍 Elevation Stamp** — read altitude at current location, label and save up to 30 points, auto-calculates total terrain relief across saved stamps
+- **📐 Slope A→B** — set two GPS points, auto-calculates gradient %, ratio 1:X, degrees °, water flow direction, and measurement error estimate
+- **🗺️ Terrain Survey** — log up to 10 points across a plot, analyse to get highest/lowest point, total relief, average elevation, std deviation, overall gradient, terrain rating (Near Flat / Gentle / Moderate / Steep / Very Steep), and water flow direction
+- **🎯 Target Deviation** — set a design target slope %, measure actual, shows deviation, status (✅ On target / 🔴 Too steep / 🔵 Too flat), actual vs ideal height difference
+- Accuracy warning system: ✅ Good ≤3m · ⚠️ Fair ≤8m · ❌ Poor >8m with retry advice
+- Uses GPS altitude (OS barometric sensor fusion) via `coords.altitude`
+- All results copyable to clipboard, survey points exportable as CSV
 
-### v1.3.0 — GPS Tab (4 tools)
-- **New main tab: GPS** — sits between Calculate and Settings
-- 📌 **Location Stamp** — one-tap GPS coordinate capture with note, save up to 50, copy or open in Google Maps
-- 🌳 **Tree Logger** — log GPS position per tree, auto-numbered T-001/T-002..., custom label override, CSV export for Notion/Farm OS
-- 📐 **Boundary Mapper** — walk plot perimeter, tap at each corner, Shoelace Formula calculates area in Acres/ha/Relong/m² + perimeter
-- 📏 **Distance Measurer** — set Point A and B, Haversine Formula gives distance in m/ft/chains + compass bearing
-- OpenStreetMap via Leaflet.js shows live map when online (no API key needed)
+### v1.3.1b — Token Validator Hotfix
+- Relaxed token format regex to accept 3–8 chars in segment 3 (was strict 6)
+- Fixes "Invalid token format" error on valid tokens generated from Google Sheets
+- Updated error message to be format-agnostic
+
+### v1.3.1 — Premium GPS System
+- GPS tools require unlock after 14-day free trial
+- One-time payment: RM 9.90 · Lifetime access · No renewals
+- Soft-lock UI — tools visible but dimmed, tap any tool to see upgrade screen
+- Upgrade modal with DuitNow / bank transfer payment details (placeholders to fill)
+- Token system: format `AGRI-YYYY-XXXXX-XX` entered in app to activate
+- WhatsApp + Google Form contact options after payment
+- Settings → Premium shows live status: trial days left / active / locked
+- 14-day free trial starts automatically on first app open
+
+### v1.3.0 — GPS Tab
+- New 4th main tab: GPS
+- 📌 Location Stamp — GPS coordinates + note, save up to 50, copy or open in Google Maps
+- 🌳 Tree Logger — log GPS per tree, auto-numbered T-001/T-002, custom label, CSV export
+- 📐 Boundary Mapper — walk corners, Shoelace Formula → area in Acres/ha/Relong/m² + perimeter
+- 📏 Distance Measurer — Point A to B, Haversine Formula → m/ft/chains + compass bearing
+- OpenStreetMap via Leaflet.js when online (no API key)
 - All GPS data persists offline in localStorage
 
 ### v1.2.0 — Pressure Feature
-- **New: Pressure converter** — 5th tab in Convert (Bar · kPa · MPa · PSI · kg/cm² · atm · mmHg)
-- **New: Pressure Calculator** — 4th panel in Calculate with 3 modes:
-  - Nozzle Checker — operating pressure vs nozzle rated range → Safe / Too Low / Too High + droplet size
-  - Flow Rate Estimator — rated flow at rated pressure → estimated flow at actual pressure (Q ∝ √P) + tank fill time
-  - Gauge Reader — any pressure unit → all 7 equivalents + sprayer quick-reference guide
+- New: Pressure converter — 5th tab in Convert (Bar · kPa · MPa · PSI · kg/cm² · atm · mmHg)
+- New: Pressure Calculator — 4th panel in Calculate:
+  - Nozzle Checker — pressure vs rated range → Safe / Too Low / Too High + droplet size
+  - Flow Rate Estimator — rated flow at rated pressure → actual flow via Q ∝ √P + tank fill time
+  - Gauge Reader — any unit → all 7 equivalents + sprayer quick-reference guide
 
 ### v1.1.0 — UI Polish
 - Responsive CSS grid for result cards (1 col phone → 2 col tablet → 3 col PC)
-- Fixed Spray Mix dose rate row — stable two-segment layout, no overflow on mobile
-- Service worker cache bumped to force update on all devices
+- Fixed Spray Mix dose rate layout — no overflow or shift on small screens
+- Service worker cache bumped to force update on all installed devices
 
 ### v1.0.0 — Initial Release
 - 4 converter tabs: Area, Length, Weight, Volume (36 units total)
 - 3 calculator modules: Spray Mix, Fertilizer Rate, Dilution %
-- First-launch onboarding — choose unit system (Malaysian / Metric / Imperial / Mixed)
-- Conversion history (last 20, stored locally, clearable)
+- First-launch onboarding — choose unit system
+- Conversion history (last 20, stored locally)
 - Full PWA offline support via service worker
 - Malaysian defaults: Acre · kg · L
 
@@ -72,29 +88,47 @@
 ### 📍 GPS Tools (Premium — RM 9.90 one-time)
 | Tool            | What it does |
 |-----------------|--------------|
-| Location Stamp  | Tap → GPS coordinates + note → save / copy / open in Maps |
-| Tree Logger     | Log GPS per tree, auto-numbered, CSV export to Notion |
-| Boundary Mapper | Walk corners → auto area (Acres / ha / Relong) + perimeter |
-| Distance        | Point A to B → distance in m/ft/chains + compass bearing |
+| Location Stamp  | One-tap GPS coordinate + note → save / copy / open in Maps |
+| Tree Logger     | Log GPS per tree, auto-numbered T-001+, CSV export to Notion |
+| Boundary Mapper | Walk corners → auto area in Acres / ha / Relong + perimeter |
+| Distance        | Point A to B → m / ft / chains + compass bearing |
+
+### 📊 Elevation Tools (Premium — same RM 9.90 unlock)
+| Tool             | What it does |
+|------------------|--------------|
+| Elevation Stamp  | Read altitude at location → label, save, compare relief |
+| Slope A→B        | Two-point gradient → % · ratio · degrees + water flow direction |
+| Terrain Survey   | Up to 10 points → terrain profile + drainage risk rating |
+| Target Deviation | Compare actual slope vs design target → deviation + ideal height diff |
 
 ### ⚙️ Settings
-- Unit system preference (Malaysian / Metric / Imperial / Mixed)
+- Unit system (Malaysian / Metric / Imperial / Mixed)
 - Premium GPS status + token entry
 - Conversion history (last 20, clearable)
 
 ---
 
-## Premium GPS — How to Unlock
+## Premium GPS + Elevation — How to Unlock
 
-1. Open the GPS tab in the app — free 14-day trial starts automatically
-2. After trial, tap any GPS tool → upgrade screen appears
+1. Open the GPS tab — free 14-day trial starts automatically
+2. After trial, tap any GPS or Elevation tool → upgrade screen appears
 3. Pay **RM 9.90** via DuitNow / bank transfer (details shown in app)
 4. Send your email + payment screenshot via WhatsApp or Google Form
-5. Receive your token: `AGRI-2026-XXXXXX-XX`
+5. Receive token: `AGRI-2026-XXXXX-XX`
 6. Go to Settings → Premium → Enter Token → Activate
-7. GPS tools unlocked permanently — lifetime access, no renewals
+7. All GPS and Elevation tools unlocked permanently — no renewals ever
 
 **Contact:** kplee85@gmail.com
+
+---
+
+## Token Generation (for owner)
+
+Use this formula in Google Sheets column to generate tokens:
+```
+="AGRI-"&YEAR(TODAY())&"-"&CHAR(RANDBETWEEN(65,90))&CHAR(RANDBETWEEN(65,90))&CHAR(RANDBETWEEN(65,90))&CHAR(RANDBETWEEN(65,90))&"-"&CHAR(RANDBETWEEN(65,90))&CHAR(RANDBETWEEN(65,90))
+```
+After generating: **Paste as Values** (Ctrl+Shift+V) to freeze the token before sending.
 
 ---
 
@@ -115,23 +149,19 @@ agriconvert-pwa/
 
 ## Deploy — GitHub Pages
 
-1. Go to repo → **Settings** → **Pages**
-2. Source: Deploy from branch → `main` / `root`
-3. Click **Save**
-4. Live at: `https://kplee85.github.io/agriconvert/`
+1. Repo → **Settings** → **Pages** → Branch: `main` / root → **Save**
+2. Live at: `https://kplee85.github.io/agriconvert/`
 
-**Install on Android:**
-1. Open URL in Chrome → tap ⋮ → **Add to Home Screen**
-2. Opens full screen, works fully offline
+**Install on Android:** Open URL in Chrome → ⋮ → **Add to Home Screen**
 
-**Share with workers:** Send URL via WhatsApp — opens and installs instantly.
+**Share:** Send URL via WhatsApp — opens and installs instantly on any phone.
 
 ---
 
-## Updating the App
+## Updating
 
 1. Edit `index.html` and/or `sw.js` on GitHub (click file → ✏️ edit)
-2. Always bump `CACHE_NAME` in `sw.js` — e.g. `agriconvert-v1.3.2`
+2. **Always bump `CACHE_NAME`** in `sw.js` — e.g. `agriconvert-v1.3.3`
 3. Commit — GitHub Pages updates in ~1 minute
 4. Hard refresh on phone: hold reload → **Hard Reload**
 
@@ -140,22 +170,22 @@ agriconvert-pwa/
 ## Roadmap
 
 ### v1.3.x — Fixes & Polish
-- [ ] Bug fixes and UI refinements based on field feedback
-- [ ] Icon design update (Scale with Leaf concept)
+- [ ] Icon design update (Scale with Leaf concept — on hold)
+- [ ] Bug fixes based on field feedback
 
 ### v1.4 — More Converters
-- [ ] **Temperature** — °C · °F · Kelvin (soil temp, cold storage, heat stress)
-- [ ] **Yield Normalizer** — kg/tree · tonne/acre · MT/ha (harvest benchmarking)
+- [ ] Temperature — °C · °F · Kelvin (soil temp, cold storage, heat stress)
+- [ ] Yield Normalizer — kg/tree · tonne/acre · MT/ha (harvest benchmarking)
 
 ### v1.5 — Smarter Calculators
-- [ ] **NPK Nutrient Calculator** — break down fertilizer label (e.g. 15-15-15) into pure N/P/K per bag and per acre
-- [ ] **Saved Spray Tank Presets** — name and save tank sizes (Knapsack 16L, Power Sprayer 200L)
+- [ ] NPK Nutrient Calculator — break down fertilizer label (15-15-15) into pure N/P/K per bag and per acre
+- [ ] Saved Spray Tank Presets — name and recall tank sizes (Knapsack 16L, Power Sprayer 200L)
 
 ### v1.6 — Field Productivity
-- [ ] **Currency Converter** — RM · USD · SGD for input cost and export pricing
-- [ ] **WhatsApp Share** — send calculator results as formatted message to workers or suppliers
+- [ ] Currency Converter — RM · USD · SGD for input cost and export pricing
+- [ ] WhatsApp Share — send calculator results as formatted message to workers or suppliers
 
 ### v2.0 — Farm OS Integration
-- [ ] **Notion sync** — push spray records, fertilizer applications, and yield data into Farm OS
-- [ ] **Conversion history export** — send session log to Telegram or save to Notion daily log
-- [ ] **Orchard profile** — store orchard size, tree count, soil type; auto-fill calculator fields
+- [ ] Notion sync — push spray records, fertilizer applications, and yield data into Farm OS
+- [ ] Conversion history export — send session log to Telegram or save to Notion daily log
+- [ ] Orchard profile — store orchard size, tree count, soil type; auto-fill calculator fields
